@@ -1,0 +1,1 @@
+{"resourceType":"ValueSet","id":"vs-fachlicher-ansprechpartner-in","url":"urn:oid:1.2.276.0.76.3.1.1.5.5.44.11.7","name":"vs-fachlicher-ansprechpartner-in","title":"FachlicherAnsprechpartnerIn","status":"draft","compose":{"include":[{"system":"http://snomed.info/sct","concept":[{"code":"405623001","display":"Assigned practitioner"}]}]}}

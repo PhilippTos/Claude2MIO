@@ -1,0 +1,29 @@
+{
+  "hinweis": "Erwartete Codesysteme bzw. Wertemuster je ValueSet-URL (ohne Version). Ersetzt keinen Terminologieserver: geprüft wird nur, ob das Codesystem bzw. das Muster passt, nicht jeder einzelne Code.",
+  "valueSets": {
+    "http://hl7.org/fhir/uv/ips/ValueSet/problems-uv-ips": { "systeme": ["http://snomed.info/sct"], "name": "IPS Problems (SNOMED CT)" },
+    "http://hl7.org/fhir/uv/ips/ValueSet/allergies-intolerances-uv-ips": { "systeme": ["http://snomed.info/sct"], "name": "IPS Allergies and Intolerances (SNOMED CT)" },
+    "http://hl7.org/fhir/uv/ips/ValueSet/allergy-reaction-uv-ips": { "systeme": ["http://snomed.info/sct"], "name": "IPS Allergy Reaction (SNOMED CT)" },
+    "http://hl7.org/fhir/uv/ips/ValueSet/procedures-uv-ips": { "systeme": ["http://snomed.info/sct"], "name": "IPS Procedures (SNOMED CT)" },
+    "http://hl7.org/fhir/uv/ips/ValueSet/target-diseases-uv-ips": { "systeme": ["http://snomed.info/sct"], "name": "IPS Target Diseases (SNOMED CT)" },
+    "http://hl7.org/fhir/uv/ips/ValueSet/vaccines-uv-ips": { "systeme": ["http://snomed.info/sct"], "name": "IPS Vaccines (SNOMED CT)" },
+    "http://hl7.org/fhir/uv/ips/ValueSet/medical-devices-uv-ips": { "systeme": ["http://snomed.info/sct"], "name": "IPS Medical Devices (SNOMED CT)" },
+    "http://hl7.org/fhir/uv/ips/ValueSet/pregnancy-status-uv-ips": { "systeme": ["http://snomed.info/sct", "http://loinc.org"], "name": "IPS Pregnancy Status" },
+    "http://hl7.org/fhir/ValueSet/body-site": { "systeme": ["http://snomed.info/sct"], "name": "SNOMED CT Body Structures" },
+    "http://hl7.org/fhir/ValueSet/condition-category": { "systeme": ["http://terminology.hl7.org/CodeSystem/condition-category"], "name": "Condition Category Codes" },
+    "http://hl7.org/fhir/ValueSet/condition-clinical": { "systeme": ["http://terminology.hl7.org/CodeSystem/condition-clinical"], "name": "Condition Clinical Status" },
+    "http://hl7.org/fhir/ValueSet/condition-ver-status": { "systeme": ["http://terminology.hl7.org/CodeSystem/condition-ver-status"], "name": "Condition Verification Status" },
+    "http://hl7.org/fhir/ValueSet/allergyintolerance-clinical": { "systeme": ["http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical"], "name": "AllergyIntolerance Clinical Status" },
+    "http://hl7.org/fhir/ValueSet/allergyintolerance-verification": { "systeme": ["http://terminology.hl7.org/CodeSystem/allergyintolerance-verification"], "name": "AllergyIntolerance Verification Status" },
+    "http://hl7.org/fhir/ValueSet/list-empty-reason": { "systeme": ["http://terminology.hl7.org/CodeSystem/list-empty-reason"], "name": "List Empty Reasons" },
+    "http://hl7.org/fhir/ValueSet/iso3166-1-2": { "muster": "^[A-Z]{2}$", "name": "ISO 3166-1 Alpha-2 (zweistelliger Ländercode, z. B. DE)" },
+    "http://hl7.org/fhir/ValueSet/administrative-gender": { "codes": ["male", "female", "other", "unknown"], "name": "Administrative Gender" },
+    "http://hl7.org/fhir/ValueSet/composition-status": { "codes": ["preliminary", "final", "amended", "entered-in-error"], "name": "Composition Status" },
+    "http://hl7.org/fhir/ValueSet/bundle-type": { "codes": ["document", "message", "transaction", "transaction-response", "batch", "batch-response", "history", "searchset", "collection"], "name": "Bundle Type" },
+    "http://hl7.org/fhir/ValueSet/event-status": { "codes": ["preparation", "in-progress", "not-done", "on-hold", "stopped", "completed", "entered-in-error", "unknown"], "name": "Event Status" },
+    "http://hl7.org/fhir/ValueSet/immunization-status": { "codes": ["completed", "entered-in-error", "not-done"], "name": "Immunization Status" },
+    "http://hl7.org/fhir/ValueSet/allergy-intolerance-type": { "codes": ["allergy", "intolerance"], "name": "AllergyIntolerance Type" },
+    "http://hl7.org/fhir/ValueSet/allergy-intolerance-category": { "codes": ["food", "medication", "environment", "biologic"], "name": "AllergyIntolerance Category" },
+    "http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality": { "codes": ["low", "high", "unable-to-assess"], "name": "AllergyIntolerance Criticality" }
+  }
+}

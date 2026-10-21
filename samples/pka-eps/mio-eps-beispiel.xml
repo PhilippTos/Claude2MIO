@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SYNTHETISCHES BEISPIEL – keine echten Patientendaten.
+  MIO ePA EU Patient Summary (KBV/mio42), erzeugt für „MIO ↔ EU Spec Compare“.
+  URL-Muster https://fhir.kbv.de/StructureDefinition/KBV_PR_PS_… ist bestätigt.
+  Stellen mit „⚠ URL UNSICHER“ nutzen Namen, die NICHT im ART-DECOR-Datensatz belegt sind
+  (belegt sind nur KBV_PR_PS_AllergyIntolerance, _Condition_Diagnosis, _Procedure, _Device, _BodyStructure, _Encounter).
+  Bewusst enthaltene Unterschiede zur EU-Spec: ICD-10-GM statt SNOMED CT (Diagnose), OPS statt SNOMED CT
+  (Prozedur), deutsche Extensions (Diagnosesicherheit, Dokumentationsdatum), Länderkennzeichen „D“ statt ISO „DE“
+  (wird nur erkannt, wenn das Datentyp-Profil Address-eu mitgeprüft wird – derzeit nicht), fehlende Angaben
+  (Composition.identifier, Sektion Medizinprodukte, Condition.category, AllergyIntolerance.verificationStatus).
+-->
+<Bundle xmlns="http://hl7.org/fhir">
+  <id value="mio-eps-beispiel-01"/>
+  <meta>
+    <!-- ⚠ URL UNSICHER: Profilname KBV_PR_PS_Bundle nicht im Datensatz belegt. -->
+    <profile value="https://fhir.kbv.de/StructureDefinition/KBV_PR_PS_Bundle"/>
+  </meta>
+  <identifier>
+    <system value="urn:ietf:rfc:3986"/>
+    <value value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e01"/>
+  </identifier>
+  <type value="document"/>
+  <timestamp value="2026-10-01T10:15:00+02:00"/>
+
+  <entry>
+    <fullUrl value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e10"/>
+    <resource>
+      <Composition>
+        <id value="5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e10"/>
+        <meta>
+          <!-- ⚠ URL UNSICHER: Profilname KBV_PR_PS_Composition nicht im Datensatz belegt. -->
+          <profile value="https://fhir.kbv.de/StructureDefinition/KBV_PR_PS_Composition"/>
+        </meta>
+        <status value="final"/>
+        <type>
+          <coding>
+            <system value="http://loinc.org"/>
+            <code value="60591-5"/>
+            <display value="Patient summary Document"/>
+          </coding>
+        </type>
+        <subject>
+          <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e20"/>
+        </subject>
+        <date value="2026-10-01T10:15:00+02:00"/>
+        <author>
+          <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e30"/>
+        </author>
+        <title value="Patientenkurzakte (ePA EU Patient Summary)"/>
+        <section>
+          <title value="Diagnosen"/>
+          <code>
+            <coding>
+              <system value="http://loinc.org"/>
+              <code value="11450-4"/>
+            </coding>
+          </code>
+          <text>
+            <status value="generated"/>
+            <div xmlns="http://www.w3.org/1999/xhtml">Essentielle Hypertonie</div>
+          </text>
+          <entry>
+            <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e40"/>
+          </entry>
+        </section>
+        <section>
+          <title value="Allergien/Unverträglichkeiten"/>
+          <code>
+            <coding>
+              <system value="http://loinc.org"/>
+              <code value="48765-2"/>
+            </coding>
+          </code>
+          <text>
+            <status value="generated"/>
+            <div xmlns="http://www.w3.org/1999/xhtml">Penicillin-Allergie (Anaphylaxie)</div>
+          </text>
+          <entry>
+            <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e50"/>
+          </entry>
+        </section>
+        <section>
+          <title value="Medikationen"/>
+          <code>
+            <coding>
+              <system value="http://loinc.org"/>
+              <code value="10160-0"/>
+            </coding>
+          </code>
+          <text>
+            <status value="generated"/>
+            <div xmlns="http://www.w3.org/1999/xhtml">Keine Angaben</div>
+          </text>
+          <emptyReason>
+            <coding>
+              <system value="http://terminology.hl7.org/CodeSystem/list-empty-reason"/>
+              <code value="unavailable"/>
+            </coding>
+          </emptyReason>
+        </section>
+        <section>
+          <title value="Prozeduren"/>
+          <code>
+            <coding>
+              <system value="http://loinc.org"/>
+              <code value="47519-4"/>
+            </coding>
+          </code>
+          <text>
+            <status value="generated"/>
+            <div xmlns="http://www.w3.org/1999/xhtml">Appendektomie, laparoskopisch</div>
+          </text>
+          <entry>
+            <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e60"/>
+          </entry>
+        </section>
+        <section>
+          <title value="Impfungen"/>
+          <code>
+            <coding>
+              <system value="http://loinc.org"/>
+              <code value="11369-6"/>
+            </coding>
+          </code>
+          <text>
+            <status value="generated"/>
+            <div xmlns="http://www.w3.org/1999/xhtml">COVID-19-Impfung (mRNA)</div>
+          </text>
+          <entry>
+            <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e70"/>
+          </entry>
+        </section>
+      </Composition>
+    </resource>
+  </entry>
+
+  <entry>
+    <fullUrl value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e20"/>
+    <resource>
+      <Patient>
+        <id value="5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e20"/>
+        <meta>
+          <!-- ⚠ URL UNSICHER: Laut Datensatz wird hier das „TI Patient“-Profil aus dem ePA-Datenraum
+               verwendet (kein KBV-Profil). Name und URL dieses Profils sind nicht im Datensatz angegeben. -->
+          <profile value="https://fhir.kbv.de/StructureDefinition/KBV_PR_PS_Patient"/>
+        </meta>
+        <identifier>
+          <type>
+            <coding>
+              <system value="http://fhir.de/CodeSystem/identifier-type-de-basis"/>
+              <code value="KVZ10"/>
+            </coding>
+          </type>
+          <system value="http://fhir.de/sid/gkv/kvid-10"/>
+          <value value="X000000001"/>
+        </identifier>
+        <name>
+          <use value="official"/>
+          <family value="Mustermann"/>
+          <given value="Erika"/>
+        </name>
+        <gender value="female"/>
+        <birthDate value="1964-08-12"/>
+        <address>
+          <type value="both"/>
+          <line value="Musterstraße 1">
+            <extension url="http://hl7.org/fhir/StructureDefinition/iso21090-ADXP-streetName">
+              <valueString value="Musterstraße"/>
+            </extension>
+            <extension url="http://hl7.org/fhir/StructureDefinition/iso21090-ADXP-houseNumber">
+              <valueString value="1"/>
+            </extension>
+          </line>
+          <city value="Musterstadt"/>
+          <postalCode value="12345"/>
+          <country value="D"/>
+        </address>
+      </Patient>
+    </resource>
+  </entry>
+
+  <entry>
+    <fullUrl value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e30"/>
+    <resource>
+      <Practitioner>
+        <id value="5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e30"/>
+        <!-- ⚠ URL FEHLT: Laut Datensatz gilt das „TI Practitioner“-Profil (ePA-Datenraum), URL nicht angegeben,
+             daher kein meta.profile. -->
+        <!-- ⚠ URL UNSICHER: NamingSystem KBV_NS_Base_ANR für die LANR bitte prüfen. -->
+        <identifier>
+          <type>
+            <coding>
+              <system value="http://terminology.hl7.org/CodeSystem/v2-0203"/>
+              <code value="LANR"/>
+            </coding>
+          </type>
+          <system value="https://fhir.kbv.de/NamingSystem/KBV_NS_Base_ANR"/>
+          <value value="999999900"/>
+        </identifier>
+        <name>
+          <use value="official"/>
+          <family value="Beispiel"/>
+          <given value="Max"/>
+          <prefix value="Dr. med.">
+            <extension url="http://hl7.org/fhir/StructureDefinition/iso21090-EN-qualifier">
+              <valueCode value="AC"/>
+            </extension>
+          </prefix>
+        </name>
+      </Practitioner>
+    </resource>
+  </entry>
+
+  <entry>
+    <fullUrl value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e40"/>
+    <resource>
+      <Condition>
+        <id value="5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e40"/>
+        <meta>
+          <profile value="https://fhir.kbv.de/StructureDefinition/KBV_PR_PS_Condition_Diagnosis"/>
+        </meta>
+        <clinicalStatus>
+          <coding>
+            <system value="http://terminology.hl7.org/CodeSystem/condition-clinical"/>
+            <code value="active"/>
+          </coding>
+        </clinicalStatus>
+        <verificationStatus>
+          <coding>
+            <system value="http://terminology.hl7.org/CodeSystem/condition-ver-status"/>
+            <code value="confirmed"/>
+          </coding>
+        </verificationStatus>
+        <code>
+          <coding>
+            <system value="http://fhir.de/CodeSystem/bfarm/icd-10-gm"/>
+            <version value="2026"/>
+            <code value="I10.90"/>
+            <display value="Essentielle Hypertonie, nicht näher bezeichnet: Ohne Angabe einer hypertensiven Krise"/>
+            <extension url="http://fhir.de/StructureDefinition/icd-10-gm-diagnosesicherheit">
+              <valueCoding>
+                <system value="https://fhir.kbv.de/CodeSystem/KBV_CS_SFHIR_ICD_DIAGNOSESICHERHEIT"/>
+                <code value="G"/>
+                <display value="gesicherte Diagnose"/>
+              </valueCoding>
+            </extension>
+          </coding>
+          <text value="Essentielle Hypertonie"/>
+        </code>
+        <subject>
+          <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e20"/>
+        </subject>
+        <onsetDateTime value="2019-03"/>
+        <recordedDate value="2026-09-15"/>
+      </Condition>
+    </resource>
+  </entry>
+
+  <entry>
+    <fullUrl value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e50"/>
+    <resource>
+      <AllergyIntolerance>
+        <id value="5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e50"/>
+        <meta>
+          <profile value="https://fhir.kbv.de/StructureDefinition/KBV_PR_PS_AllergyIntolerance"/>
+        </meta>
+        <clinicalStatus>
+          <coding>
+            <system value="http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical"/>
+            <code value="active"/>
+          </coding>
+        </clinicalStatus>
+        <type value="allergy"/>
+        <category value="medication"/>
+        <criticality value="high"/>
+        <code>
+          <coding>
+            <system value="http://snomed.info/sct"/>
+            <code value="764146007"/>
+            <display value="Penicillin"/>
+          </coding>
+          <text value="Penicillin"/>
+        </code>
+        <patient>
+          <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e20"/>
+        </patient>
+        <reaction>
+          <manifestation>
+            <coding>
+              <system value="http://snomed.info/sct"/>
+              <code value="39579001"/>
+              <display value="Anaphylaxis (disorder)"/>
+            </coding>
+          </manifestation>
+        </reaction>
+      </AllergyIntolerance>
+    </resource>
+  </entry>
+
+  <entry>
+    <fullUrl value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e60"/>
+    <resource>
+      <Procedure>
+        <id value="5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e60"/>
+        <meta>
+          <profile value="https://fhir.kbv.de/StructureDefinition/KBV_PR_PS_Procedure"/>
+        </meta>
+        <!-- ⚠ URL UNSICHER: Datensatz nennt nur den Slice „KBV_PR_PS_Procedure.extension:Dokumentationsdatum“,
+             die Extension-URL KBV_EX_Base_Recorded_Date ist angenommen. -->
+        <extension url="https://fhir.kbv.de/StructureDefinition/KBV_EX_Base_Recorded_Date">
+          <valueDateTime value="2026-09-15"/>
+        </extension>
+        <status value="completed"/>
+        <code>
+          <coding>
+            <system value="http://fhir.de/CodeSystem/bfarm/ops"/>
+            <version value="2026"/>
+            <code value="5-470.11"/>
+            <display value="Appendektomie: Laparoskopisch: Absetzung durch Klammern (Stapler)"/>
+          </coding>
+          <text value="Appendektomie, laparoskopisch"/>
+        </code>
+        <subject>
+          <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e20"/>
+        </subject>
+        <performedDateTime value="2001-06-20"/>
+      </Procedure>
+    </resource>
+  </entry>
+
+  <entry>
+    <fullUrl value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e70"/>
+    <resource>
+      <Immunization>
+        <id value="5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e70"/>
+        <meta>
+          <!-- ⚠ URL UNSICHER: Profilname KBV_PR_PS_Immunization nicht im Datensatz belegt (Gruppe „Impfung“ ohne FHIR-Mapping). -->
+          <profile value="https://fhir.kbv.de/StructureDefinition/KBV_PR_PS_Immunization"/>
+        </meta>
+        <status value="completed"/>
+        <vaccineCode>
+          <coding>
+            <system value="http://snomed.info/sct"/>
+            <code value="1119349007"/>
+            <display value="Vaccine product containing only severe acute respiratory syndrome coronavirus 2 messenger ribonucleic acid (medicinal product)"/>
+          </coding>
+          <text value="mRNA-Impfstoff gegen COVID-19"/>
+        </vaccineCode>
+        <patient>
+          <reference value="urn:uuid:5b7e2c1a-0d3f-4a6b-9c1e-1a2b3c4d5e20"/>
+        </patient>
+        <occurrenceDateTime value="2023-10-05"/>
+      </Immunization>
+    </resource>
+  </entry>
+</Bundle>

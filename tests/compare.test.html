@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tests: compare.js</title>
+  <style>
+    :root { --bg: #fff; --text: #1a1d24; --ok: #0a7a3d; --fail: #b3261e; --skip: #8a5a00; --muted: #5d6472; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #11141a; --text: #e8eaf0; --ok: #5fd28f; --fail: #ff8a80; --skip: #f2c14e; --muted: #9aa3b2; }
+    }
+    body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+    main { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; }
+    #summary { font-weight: 600; margin: 8px 0 16px; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 6px 0; border-bottom: 1px solid color-mix(in srgb, var(--text) 12%, transparent); }
+    .ok::before { content: "✔ bestanden – "; color: var(--ok); font-weight: 600; }
+    .fail::before { content: "✘ fehlgeschlagen – "; color: var(--fail); font-weight: 600; }
+    .skip::before { content: "⚠ übersprungen – "; color: var(--skip); font-weight: 600; }
+    .detail { color: var(--muted); font-size: 0.9em; display: block; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Tests: Vergleichslogik (compare.js)</h1>
+  <p>Läuft komplett im Browser. Für die Integrationstests mit den Beispieldateien die Seite über einen lokalen Webserver öffnen.</p>
+  <p id="summary" role="status" aria-live="polite">Tests laufen …</p>
+  <ul id="results"></ul>
+</main>
+
+<script src="../js/fhir-xml.js"></script>
+<script src="../js/compare.js"></script>
+<script src="../js/specs.js"></script>
+<script>
+(async function () {
+  'use strict';
+  const ergebnisse = [];
+  function pruefe(name, fn) {
+    try {
+      const r = fn();
+      ergebnisse.push({ name, status: r === 'skip' ? 'skip' : 'ok' });
+    } catch (e) {
+      ergebnisse.push({ name, status: 'fail', detail: e.message });
+    }
+  }
+  async function pruefeAsync(name, fn) {
+    try {
+      const r = await fn();
+      ergebnisse.push({ name, status: r && r.skip ? 'skip' : 'ok', detail: r && r.skip });
+    } catch (e) {
+      ergebnisse.push({ name, status: 'fail', detail: e.message });
+    }
+  }
+  function erwarte(bed, text) { if (!bed) throw new Error(text); }
+
+  // ------------------------------------------------------------ Mini-Profil
+  const OBL = code => ({ url: 'http://hl7.org/fhir/StructureDefinition/obligation', extension: [
+    { url: 'code', valueCode: code }, { url: 'actor', valueCanonical: 'http://hl7.org/fhir/uv/ips/ActorDefinition/Creator' }] });
+  const SD = {
+    resourceType: 'StructureDefinition', id: 'test-condition', url: 'http://example.org/StructureDefinition/test-condition',
+    name: 'TestCondition', title: 'Test Condition', type: 'Condition',
+    snapshot: { element: [
+      { id: 'Condition', path: 'Condition', min: 0, max: '*' },
+      { id: 'Condition.id', path: 'Condition.id', min: 0, max: '1', type: [{ code: 'http://hl7.org/fhirpath/System.String' }] },
+      { id: 'Condition.meta', path: 'Condition.meta', min: 0, max: '1', type: [{ code: 'Meta' }] },
+      { id: 'Condition.extension', path: 'Condition.extension', min: 0, max: '*', type: [{ code: 'Extension' }],
+        slicing: { discriminator: [{ type: 'value', path: 'url' }], rules: 'open' } },
+      { id: 'Condition.extension:assertedDate', path: 'Condition.extension', sliceName: 'assertedDate', min: 0, max: '1',
+        type: [{ code: 'Extension', profile: ['http://hl7.org/fhir/StructureDefinition/condition-assertedDate'] }] },
+      { id: 'Condition.clinicalStatus', path: 'Condition.clinicalStatus', min: 0, max: '1', type: [{ code: 'CodeableConcept' }], mustSupport: true },
+      { id: 'Condition.category', path: 'Condition.category', min: 0, max: '*', type: [{ code: 'CodeableConcept' }], extension: [OBL('SHALL:populate-if-known')] },
+      { id: 'Condition.code', path: 'Condition.code', min: 1, max: '1', type: [{ code: 'CodeableConcept' }],
+        binding: { strength: 'preferred', valueSet: 'http://hl7.org/fhir/uv/ips/ValueSet/problems-uv-ips' } },
+      { id: 'Condition.bodySite', path: 'Condition.bodySite', min: 0, max: '*', type: [{ code: 'CodeableConcept' }],
+        patternCodeableConcept: { coding: [{ system: 'http://snomed.info/sct', code: '12345' }] } },
+      { id: 'Condition.subject', path: 'Condition.subject', min: 1, max: '1', type: [{ code: 'Reference' }] },
+      { id: 'Condition.onset[x]', path: 'Condition.onset[x]', min: 0, max: '1', type: [{ code: 'dateTime' }, { code: 'Period' }] },
+      { id: 'Condition.recordedDate', path: 'Condition.recordedDate', min: 0, max: '1', type: [{ code: 'dateTime' }] },
+      { id: 'Condition.note', path: 'Condition.note', min: 0, max: '0', type: [{ code: 'Annotation' }] },
+    ] },
+  };
+  const HINWEISE = { 'http://hl7.org/fhir/uv/ips/ValueSet/problems-uv-ips': { systeme: ['http://snomed.info/sct'], name: 'IPS Problems' } };
+  const profil = CompareLogik.normalisiereProfil(SD, 'https://example.org/ig/');
+
+  const TEIL = {
+    status: '<clinicalStatus><coding><system value="http://terminology.hl7.org/CodeSystem/condition-clinical"/><code value="active"/></coding></clinicalStatus>',
+    kategorie: '<category><coding><system value="http://terminology.hl7.org/CodeSystem/condition-category"/><code value="problem-list-item"/></coding></category>',
+    code: '<code><coding><system value="http://snomed.info/sct"/><code value="38341003"/></coding></code>',
+    subjekt: '<subject><reference value="Patient/p1"/></subject>',
+  };
+  function condition(inhalt) {
+    return `<Condition xmlns="http://hl7.org/fhir"><id value="c1"/>${inhalt}</Condition>`;
+  }
+  const VOLL = TEIL.status + TEIL.kategorie + TEIL.code + TEIL.subjekt;
+  function vergleiche(xml) {
+    const { ressourcen } = FhirXml.parseFhirXml(xml);
+    return CompareLogik.vergleicheRessource(ressourcen[0], profil, { bindingHinweise: HINWEISE }).befunde;
+  }
+  const finde = (befunde, kat, pfad) => befunde.filter(b => b.kategorie === kat && (!pfad || b.pfad === pfad));
+  const probleme = befunde => befunde.filter(b => b.kategorie === 'fehlt' || b.kategorie === 'abweichend');
+
+  // ------------------------------------------------------------ 4. ÜBEREINSTIMMEND
+  pruefe('ÜBEREINSTIMMEND: vollständige, passende Ressource hat keine Probleme', () => {
+    const b = vergleiche(condition(VOLL + '<onsetDateTime value="2019-03"/>'));
+    erwarte(probleme(b).length === 0, 'Unerwartete Probleme: ' + JSON.stringify(probleme(b).map(x => x.erklaerung)));
+    erwarte(finde(b, 'ok', 'Condition.code').length === 1, 'Condition.code nicht als übereinstimmend erkannt');
+    erwarte(finde(b, 'ok', 'Condition.onset[x]').length === 1, 'onset[x] nicht als übereinstimmend erkannt');
+    erwarte(CompareLogik.berechneScore(b) === 100, 'Score sollte 100 sein');
+  });
+
+  // ------------------------------------------------------------ 1. FEHLT
+  pruefe('FEHLT (kritisch): Pflichtelement code (1..1) fehlt', () => {
+    const b = finde(vergleiche(condition(TEIL.status + TEIL.kategorie + TEIL.subjekt)), 'fehlt', 'Condition.code');
+    erwarte(b.length === 1 && b[0].schwere === 'kritisch', 'Befund fehlt oder falsche Schwere');
+    erwarte(b[0].igLink && b[0].igLink.includes('test-condition-definitions.html#Condition.code'), 'IG-Link fehlt');
+  });
+  pruefe('FEHLT (Warnung): Obligation SHALL:populate-if-known (category) nicht erfüllt', () => {
+    const b = finde(vergleiche(condition(TEIL.status + TEIL.code + TEIL.subjekt)), 'fehlt', 'Condition.category');
+    erwarte(b.length === 1 && b[0].schwere === 'warnung', 'Befund fehlt oder falsche Schwere');
+  });
+  pruefe('FEHLT (Warnung): Must-Support-Element clinicalStatus fehlt', () => {
+    const b = finde(vergleiche(condition(TEIL.kategorie + TEIL.code + TEIL.subjekt)), 'fehlt', 'Condition.clinicalStatus');
+    erwarte(b.length === 1 && b[0].schwere === 'warnung', 'Befund fehlt oder falsche Schwere');
+  });
+  pruefe('FEHLT: optionale Elemente ohne Anforderung erzeugen keinen Befund', () => {
+    const b = vergleiche(condition(VOLL));
+    erwarte(finde(b, 'fehlt', 'Condition.recordedDate').length === 0, 'recordedDate fälschlich als fehlend gemeldet');
+  });
+
+  // ------------------------------------------------------------ 2. NUR IM MIO
+  pruefe('NUR IM MIO: deutsche Extension wird als Ergänzung erkannt', () => {
+    const ext = '<extension url="http://fhir.de/StructureDefinition/beispiel-extension"><valueString value="x"/></extension>';
+    const b = finde(vergleiche(condition(ext + VOLL)), 'nur-mio');
+    erwarte(b.length === 1 && b[0].aspekt === 'extension' && b[0].schwere === 'info', JSON.stringify(b));
+  });
+  pruefe('NUR IM MIO: Extension aus erlaubtem Slice wird NICHT gemeldet', () => {
+    const ext = '<extension url="http://hl7.org/fhir/StructureDefinition/condition-assertedDate"><valueDateTime value="2020-01-01"/></extension>';
+    const b = vergleiche(condition(ext + VOLL));
+    erwarte(finde(b, 'nur-mio').length === 0, 'Slice-Extension fälschlich als Ergänzung gemeldet');
+    erwarte(finde(b, 'ok', 'Condition.extension:assertedDate').length === 1, 'Slice nicht erkannt');
+  });
+  pruefe('NUR IM MIO: Extension innerhalb eines nicht aufgeklappten Datentyps wird gemeldet', () => {
+    const code = '<code><coding><extension url="http://fhir.de/StructureDefinition/icd-10-gm-diagnosesicherheit"><valueCoding><code value="G"/></valueCoding></extension>' +
+      '<system value="http://snomed.info/sct"/><code value="38341003"/></coding></code>';
+    const b = finde(vergleiche(condition(TEIL.status + TEIL.kategorie + code + TEIL.subjekt)), 'nur-mio');
+    erwarte(b.length === 1 && b[0].pfad.startsWith('Condition.code.coding.extension'), JSON.stringify(b.map(x => x.pfad)));
+  });
+  pruefe('NUR IM MIO: unbekanntes Element wird gemeldet', () => {
+    const b = finde(vergleiche(condition(VOLL + '<foo value="bar"/>')), 'nur-mio');
+    erwarte(b.length === 1 && b[0].aspekt === 'element' && b[0].element === 'foo', JSON.stringify(b));
+  });
+
+  // ------------------------------------------------------------ 3. ABWEICHEND
+  pruefe('ABWEICHEND: Kardinalität (note ist 0..0 ausgeschlossen)', () => {
+    const b = finde(vergleiche(condition(VOLL + '<note><text value="x"/></note>')), 'abweichend', 'Condition.note');
+    erwarte(b.length === 1 && b[0].aspekt === 'kardinalitaet' && b[0].soll === '0..0', JSON.stringify(b));
+  });
+  pruefe('ABWEICHEND: Datentyp (onsetAge statt dateTime/Period)', () => {
+    const b = finde(vergleiche(condition(VOLL + '<onsetAge><value value="40"/></onsetAge>')), 'abweichend', 'Condition.onset[x]');
+    erwarte(b.length === 1 && b[0].aspekt === 'datentyp' && b[0].ist === 'Age', JSON.stringify(b));
+  });
+  pruefe('ABWEICHEND: pattern (bodySite mit anderem Code)', () => {
+    const bs = '<bodySite><coding><system value="http://snomed.info/sct"/><code value="99999"/></coding></bodySite>';
+    const b = finde(vergleiche(condition(VOLL + bs)), 'abweichend', 'Condition.bodySite');
+    erwarte(b.length === 1 && b[0].aspekt === 'pattern', JSON.stringify(b));
+  });
+  pruefe('ABWEICHEND: pattern erfüllt → kein Befund', () => {
+    const bs = '<bodySite><coding><system value="http://snomed.info/sct"/><code value="12345"/><display value="x"/></coding></bodySite>';
+    erwarte(finde(vergleiche(condition(VOLL + bs)), 'abweichend').length === 0, 'Pattern fälschlich als abweichend gemeldet');
+  });
+  pruefe('ABWEICHEND: Codesystem (ICD-10-GM statt SNOMED CT) mit Ist- und Soll-Wert', () => {
+    const icd = '<code><coding><system value="http://fhir.de/CodeSystem/bfarm/icd-10-gm"/><code value="I10.90"/></coding></code>';
+    const b = finde(vergleiche(condition(TEIL.status + TEIL.kategorie + icd + TEIL.subjekt)), 'abweichend', 'Condition.code');
+    erwarte(b.length === 1 && b[0].aspekt === 'binding', JSON.stringify(b));
+    erwarte(b[0].ist === 'ICD-10-GM' && b[0].soll.includes('IPS Problems'), 'Ist/Soll falsch: ' + b[0].ist + ' / ' + b[0].soll);
+    erwarte(b[0].schwere === 'info', 'preferred-Binding sollte Info sein');
+  });
+  pruefe('ABWEICHEND: Kardinalität (code doppelt bei 1..1)', () => {
+    const b = finde(vergleiche(condition(VOLL + TEIL.code)), 'abweichend', 'Condition.code');
+    erwarte(b.some(x => x.aspekt === 'kardinalitaet'), JSON.stringify(b));
+  });
+
+  // ------------------------------------------------------------ Fehlerfälle
+  pruefe('Fehler: ungültiges XML', () => {
+    try { FhirXml.parseFhirXml('<Condition xmlns="http://hl7.org/fhir"><id value="1"></Condition>'); }
+    catch (e) { erwarte(e.code === 'xml-ungueltig', 'Falscher Fehlercode: ' + e.code); return; }
+    throw new Error('Kein Fehler geworfen');
+  });
+  pruefe('Fehler: XML ohne FHIR-Ressource', () => {
+    try { FhirXml.parseFhirXml('<rezept><name>Kuchen</name></rezept>'); }
+    catch (e) { erwarte(e.code === 'kein-fhir', 'Falscher Fehlercode: ' + e.code); return; }
+    throw new Error('Kein Fehler geworfen');
+  });
+  pruefe('Fehler: leere Datei', () => {
+    try { FhirXml.parseFhirXml('   '); }
+    catch (e) { erwarte(e.code === 'leer', 'Falscher Fehlercode: ' + e.code); return; }
+    throw new Error('Kein Fehler geworfen');
+  });
+  await pruefeAsync('Fehler: unbekanntes Profil (Ressourcentyp ohne EU-Profil)', async () => {
+    const daten = { profile: [], eigeneProfile: new Map([[profil.url, profil]]), mapping: null, mioModell: null, bindingHinweise: {}, projekt: { eu: {} } };
+    try { await Specs.analysiere('<Basic xmlns="http://hl7.org/fhir"><id value="b"/></Basic>', daten); }
+    catch (e) { erwarte(e.code === 'unbekanntes-profil', 'Falscher Fehlercode: ' + e.code); return; }
+    throw new Error('Kein Fehler geworfen');
+  });
+
+  // ------------------------------------------------------------ Profilwahl
+  pruefe('Profilwahl: meta.profile hat Vorrang', () => {
+    const p2 = CompareLogik.normalisiereProfil({ ...SD, id: 'p2', url: 'http://example.org/p2' }, null);
+    const info = FhirXml.parseFhirXml(condition('<meta><profile value="http://example.org/p2"/></meta>' + VOLL)).ressourcen[0];
+    erwarte(CompareLogik.waehleProfil(info, [profil, p2], null).profil === p2, 'meta.profile nicht berücksichtigt');
+  });
+  pruefe('Profilwahl: Code-Muster unterscheidet Observation-Profile', () => {
+    const obs = (id, code) => CompareLogik.normalisiereProfil({ resourceType: 'StructureDefinition', id, url: 'http://example.org/' + id, type: 'Observation',
+      snapshot: { element: [
+        { id: 'Observation', path: 'Observation', min: 0, max: '*' },
+        { id: 'Observation.code', path: 'Observation.code', min: 1, max: '1', type: [{ code: 'CodeableConcept' }],
+          patternCodeableConcept: { coding: [{ system: 'http://loinc.org', code }] } }] } }, null);
+    const a = obs('a', '11111-1'); const b = obs('b', '82810-3');
+    const info = FhirXml.parseFhirXml('<Observation xmlns="http://hl7.org/fhir"><code><coding><system value="http://loinc.org"/><code value="82810-3"/></coding></code></Observation>').ressourcen[0];
+    const w = CompareLogik.waehleProfil(info, [a, b], null);
+    erwarte(w.profil === b && w.grund === 'Code-Muster', 'Falsches Profil: ' + (w && w.profil.id));
+  });
+  pruefe('Dokument: Ressource ohne EU-Profil wird als „nur im MIO“ gemeldet', () => {
+    const { ressourcen } = FhirXml.parseFhirXml('<Basic xmlns="http://hl7.org/fhir"><id value="b"/></Basic>');
+    const e = CompareLogik.vergleicheDokument(ressourcen, [null], {});
+    erwarte(e.befunde.length === 1 && e.befunde[0].kategorie === 'nur-mio' && e.befunde[0].aspekt === 'ressource', JSON.stringify(e.befunde));
+  });
+
+  // ------------------------------------------------------------ Integration (benötigt Webserver)
+  let daten = null;
+  try {
+    Specs.setzeBasis('../'); // Pfade in config/ sind relativ zur App-Wurzel
+    const projekte = await Specs.ladeProjekte();
+    daten = await Specs.ladeProjekt(projekte.find(p => p.id === 'pka-eps'));
+  } catch (e) { /* über file:// nicht verfügbar */ }
+  async function beispiel(datei) {
+    const r = await fetch(datei);
+    if (!r.ok) throw new Error('Beispiel nicht ladbar: ' + datei);
+    return Specs.analysiere(await r.text(), daten);
+  }
+  if (daten) {
+    await pruefeAsync('Integration: EU-Beispiel erreicht höheren Score als MIO-Beispiel', async () => {
+      const eu = await beispiel('../samples/pka-eps/eu-eps-beispiel.xml');
+      const mio = await beispiel('../samples/pka-eps/mio-eps-beispiel.xml');
+      erwarte(eu.score > mio.score, `EU ${eu.score} % vs. MIO ${mio.score} %`);
+    });
+    await pruefeAsync('Integration: MIO-Beispiel zeigt ICD-10-GM, OPS und deutsche Extensions', async () => {
+      const mio = await beispiel('../samples/pka-eps/mio-eps-beispiel.xml');
+      const b = mio.befunde;
+      erwarte(b.some(x => x.pfad === 'Condition.code' && x.aspekt === 'binding' && x.ist === 'ICD-10-GM'), 'ICD-10-GM nicht erkannt');
+      erwarte(b.some(x => x.pfad === 'Procedure.code' && x.aspekt === 'binding' && x.ist === 'OPS'), 'OPS nicht erkannt');
+      erwarte(b.some(x => x.kategorie === 'nur-mio' && x.pfad.startsWith('Procedure.extension')), 'Dokumentationsdatum-Extension nicht erkannt');
+      erwarte(b.some(x => x.kategorie === 'nur-mio' && x.ist.includes('diagnosesicherheit')), 'Diagnosesicherheit-Extension nicht erkannt');
+    });
+  } else {
+    ergebnisse.push({ name: 'Integration mit Beispieldateien', status: 'skip', detail: 'Seite über einen Webserver öffnen (fetch über file:// nicht möglich).' });
+  }
+
+  // ------------------------------------------------------------ Ausgabe
+  const ul = document.getElementById('results');
+  for (const r of ergebnisse) {
+    const li = document.createElement('li');
+    li.className = r.status;
+    li.textContent = r.name;
+    if (r.detail) { const s = document.createElement('span'); s.className = 'detail'; s.textContent = r.detail; li.appendChild(s); }
+    ul.appendChild(li);
+  }
+  const n = s => ergebnisse.filter(r => r.status === s).length;
+  document.getElementById('summary').textContent =
+    `${n('ok')} bestanden, ${n('fail')} fehlgeschlagen, ${n('skip')} übersprungen (von ${ergebnisse.length})`;
+  window.__testErgebnis = { ok: n('ok'), fail: n('fail'), skip: n('skip'), ergebnisse };
+})();
+</script>
+</body>
+</html>

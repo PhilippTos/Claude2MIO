@@ -1,0 +1,34 @@
+{
+  "projekte": [
+    {
+      "id": "pka-eps",
+      "anzeigename": "MIO ePA EU Patient Summary ↔ HL7 Europe Patient Summary",
+      "beschreibung": "Vergleich des MIO ePA EU Patient Summary (deutsche Ausprägung) mit dem HL7 Europe Patient Summary.",
+      "mio": {
+        "name": "MIO ePA EU Patient Summary",
+        "version": "<bitte ergänzen>",
+        "stand": "2025-07-09 (ART-DECOR-Datensatz, Status: draft)",
+        "quelle": "ART-DECOR-Export (logisches Datenmodell), noch keine veröffentlichten FHIR-Profile",
+        "link": "<bitte ergänzen>",
+        "modell": "specs/pka-eps/mio/model.json",
+        "valuesets": "specs/pka-eps/mio/valuesets/"
+      },
+      "eu": {
+        "name": "HL7 Europe Patient Summary",
+        "packageId": "hl7.fhir.eu.eps",
+        "version": "2026-10-16",
+        "versionHinweis": "Letzter verfügbarer Stand: CI-Build 1.0.0-ci-build vom 16.10.2026 (neuer als die veröffentlichte Version 1.0.0-ballot)",
+        "canonical": "http://hl7.eu/fhir/eps",
+        "igUrl": "https://build.fhir.org/ig/hl7-eu/eps/",
+        "profilIndex": "specs/pka-eps/eu/index.json",
+        "valuesets": "specs/pka-eps/eu/valuesets/",
+        "bindingHinweise": "specs/pka-eps/eu/binding-hinweise.json"
+      },
+      "mapping": "specs/pka-eps/mapping.json",
+      "beispiele": [
+        { "titel": "MIO-Beispiel (synthetisch)", "datei": "samples/pka-eps/mio-eps-beispiel.xml", "seite": "mio" },
+        { "titel": "EU-Beispiel (synthetisch)", "datei": "samples/pka-eps/eu-eps-beispiel.xml", "seite": "eu" }
+      ]
+    }
+  ]
+}

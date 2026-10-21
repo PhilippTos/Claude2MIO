@@ -1,0 +1,32 @@
+{
+  "projekt": "pka-eps",
+  "hinweis": "Kein Mapping-Dokument in 4_mappings-und-doku/. Zuordnung abgeleitet aus den EHDS-Bezügen im ART-DECOR-Datensatz (status 'abgeleitet') bzw. anhand des Ressourcentyps vorgeschlagen (status 'vorgeschlagen'). KBV-URL-Muster https://fhir.kbv.de/StructureDefinition/<Name> ist bestätigt; Profilnamen ohne Beleg im Datensatz sind mit ⚠ URL unsicher markiert.",
+  "statuswerte": {
+    "abgeleitet": "MIO-Profilname und EHDS-Modell stehen im ART-DECOR-Datensatz",
+    "vorgeschlagen": "Zuordnung über Ressourcentyp/EHDS-Modell, MIO-Profilname unsicher oder unbekannt",
+    "ohne-gegenstueck": "Im EU Patient Summary gibt es kein passendes Profil"
+  },
+  "zuordnungen": [
+    { "mioGruppe": "Allergie/Unverträglichkeit", "mioProfil": "KBV_PR_PS_AllergyIntolerance", "ressource": "AllergyIntolerance", "ehds": "EHDSAllergyIntolerance", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/allergyintolerance-obl-eu-eps", "status": "abgeleitet" },
+    { "mioGruppe": "Diagnose", "mioProfil": "KBV_PR_PS_Condition_Diagnosis", "ressource": "Condition", "ehds": "EHDSCondition", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/condition-obl-eu-eps", "status": "abgeleitet" },
+    { "mioGruppe": "Prozedur", "mioProfil": "KBV_PR_PS_Procedure", "ressource": "Procedure", "ehds": "EHDSProcedure", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/procedure-eu-eps", "status": "abgeleitet" },
+    { "mioGruppe": "Gerät", "mioProfil": "KBV_PR_PS_Device", "ressource": "Device", "ehds": "EHDSDevice", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/device-eu-eps", "status": "abgeleitet" },
+    { "mioGruppe": "Gerätenutzung", "mioProfil": "KBV_PR_PS_DeviceUseStatement (⚠ URL unsicher)", "ressource": "DeviceUseStatement", "ehds": "EHDSDeviceUse", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/deviceUseStatement-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Impfung", "mioProfil": "KBV_PR_PS_Immunization (⚠ URL unsicher)", "ressource": "Immunization", "ehds": "EHDSImmunisation", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/immunization-obl-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Medizinische Warnung", "mioProfil": "KBV_PR_PS_Flag (⚠ URL unsicher)", "ressource": "Flag", "ehds": "EHDSAlert", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/flag-alert-obl-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Persönliche Erklärung", "mioProfil": "KBV_PR_PS_Consent (⚠ URL unsicher)", "ressource": "Consent", "ehds": "EHDSAdvanceDirective", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/consent-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Körperstruktur", "mioProfil": "KBV_PR_PS_BodyStructure", "ressource": "BodyStructure", "ehds": "EHDSBodyStructure", "euProfil": null, "status": "ohne-gegenstueck" },
+    { "mioGruppe": "TI Patient", "mioProfil": "TI-Profil (ePA-Datenraum)", "ressource": "Patient", "ehds": "EHDSPatient", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/patient-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "TI Practitioner", "mioProfil": "TI-Profil (ePA-Datenraum)", "ressource": "Practitioner", "ehds": "EHDSHealthProfessional", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/practitioner-obl-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "TI PractitionerRole", "mioProfil": "TI-Profil (ePA-Datenraum)", "ressource": "PractitionerRole", "ehds": "EHDSHealthProfessional", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/practitionerrole-obl-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "TI Organization", "mioProfil": "TI-Profil (ePA-Datenraum)", "ressource": "Organization", "ehds": "EHDSOrganisation", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/organization-obl-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Arzneimittel (ePA Medication Service)", "mioProfil": "ePA Medication Service", "ressource": "Medication", "ehds": "EHDSMedication", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/medication-obl-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Medikations-Eintrag (ePA Medication Service)", "mioProfil": "ePA Medication Service", "ressource": "MedicationStatement", "ehds": "EHDSMedicationUse", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/medicationstatement-obl-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Laborbefund (dgLP)", "mioProfil": "KBV_PR_MIO_LAB_DiagnosticReport", "ressource": "DiagnosticReport", "ehds": "EHDSLaboratoryObservation", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/diagnosticReport-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Schwangerschaftsstatus", "mioProfil": "AMTS-rZI (⚠ URL unsicher)", "ressource": "Observation", "ehds": "EHDSCurrentPregnancy", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/observation-pregnancy-status-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Geschätzter Entbindungstermin", "mioProfil": "AMTS-rZI (⚠ URL unsicher)", "ressource": "Observation", "ehds": "EHDSCurrentPregnancy.expectedDateOfDelivery", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/observation-pregnancy-edd-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Reiseanamnese-Eintrag (Backlog)", "mioProfil": null, "ressource": "Observation", "ehds": "EHDSTravelHistory", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/observation-travel-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Dokument (Composition)", "mioProfil": "KBV_PR_PS_Composition (⚠ URL unsicher)", "ressource": "Composition", "ehds": "EHDSPatientSummary", "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/composition-eu-eps", "status": "vorgeschlagen" },
+    { "mioGruppe": "Dokument (Bundle)", "mioProfil": "KBV_PR_PS_Bundle (⚠ URL unsicher)", "ressource": "Bundle", "ehds": null, "euProfil": "http://hl7.eu/fhir/eps/StructureDefinition/bundle-eu-eps", "status": "vorgeschlagen" }
+  ]
+}

@@ -1,0 +1,1 @@
+{"resourceType":"ValueSet","id":"ImmunizationStatusCodes","url":"urn:oid:1.2.276.0.76.3.1.1.5.5.88.11.11","name":"ImmunizationStatusCodes","title":"Immunization Status Codes PKA","status":"draft","compose":{"include":[{"system":"urn:oid:2.16.840.1.113883.4.642.4.110","concept":[{"code":"completed","display":"Completed"},{"code":"not-done","display":"Not Done"}]}]}}

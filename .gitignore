@@ -1,0 +1,10 @@
+# Rohdateien-Ablage (wird nie veröffentlicht)
+_eingang/
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Lokale Entwicklungs-Konfiguration (verweist auf temporäre Pfade)
+.claude/launch.json

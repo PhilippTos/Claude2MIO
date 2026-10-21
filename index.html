@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MIO ↔ EU Spec Compare</title>
+  <meta name="description" content="Vergleicht MIO-Dateien (FHIR XML) mit der passenden EU-Spezifikation und zeigt die Unterschiede. Alles läuft im Browser.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M9 11h9m0 0-3-3m3 3-3 3M23 21h-9m0 0 3-3m-3 3 3 3' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+</head>
+<body>
+  <!-- Icon-Bibliothek (inline, keine externen Abhängigkeiten) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-fehlt" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-nur-mio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-abweichend" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 13h7M8.5 16.5h7M14 10.5l-4 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="m8 12.5 2.6 2.6L16.2 9.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-kritisch" viewBox="0 0 24 24"><path d="M8.2 2.5h7.6l5.7 5.7v7.6l-5.7 5.7H8.2l-5.7-5.7V8.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 7.5v5.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1.3" fill="currentColor"/></symbol>
+    <symbol id="i-warnung" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 9.5v4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.8" r="1.3" fill="currentColor"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4m0 0-4.5 4.5M12 4l4.5 4.5M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z M14 3v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17Z" fill="currentColor"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M4 17v1.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3.5h10V9M7 17H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 9h14a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 19 17h-2M7 14h10v6.5H7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-arrows" viewBox="0 0 24 24"><path d="M5 8h13m0 0-3.5-3.5M18 8l-3.5 3.5M19 16H6m0 0 3.5-3.5M6 16l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+  <div class="backdrop" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><svg><use href="#i-arrows"/></svg></span>
+      <div>
+        <p class="brand-title">MIO ↔ EU Spec Compare</p>
+        <p class="brand-sub">Unterschiede zwischen MIO-Dateien und EU-Spezifikationen</p>
+      </div>
+    </div>
+    <button type="button" class="btn btn-ghost theme-toggle" id="theme-toggle" aria-label="Farbschema: automatisch">
+      <svg aria-hidden="true"><use href="#i-auto"/></svg><span class="theme-label">Auto</span>
+    </button>
+  </header>
+
+  <div class="privacy" role="note">
+    <svg aria-hidden="true"><use href="#i-lock"/></svg>
+    <p><strong>Daten verlassen Ihren Browser nicht – bitte nur Testdaten verwenden.</strong>
+      <span>Diese Prüfung ersetzt keine offizielle Validierung (z. B. HL7 FHIR Validator).</span></p>
+  </div>
+
+  <nav class="stepper" aria-label="Fortschritt">
+    <ol>
+      <li><button type="button" class="step" data-step="1"><span class="step-no">1</span><span class="step-text">Projekt wählen</span></button></li>
+      <li><button type="button" class="step" data-step="2"><span class="step-no">2</span><span class="step-text">Datei hochladen</span></button></li>
+      <li><button type="button" class="step" data-step="3"><span class="step-no">3</span><span class="step-text">Ergebnis</span></button></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+    <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+
+    <!-- Schritt 1 -->
+    <section id="schritt-1" class="panel" aria-labelledby="h-schritt-1">
+      <h1 id="h-schritt-1" tabindex="-1">Welche Spezifikationen möchten Sie vergleichen?</h1>
+      <p class="lead">Wählen Sie ein Projekt. Jedes Projekt verbindet ein MIO mit der passenden EU-Spezifikation.</p>
+      <div id="projekt-liste" class="projekt-grid" aria-busy="true"></div>
+    </section>
+
+    <!-- Schritt 2 -->
+    <section id="schritt-2" class="panel" aria-labelledby="h-schritt-2" hidden>
+      <h1 id="h-schritt-2" tabindex="-1">MIO-Datei hochladen</h1>
+      <div id="projekt-info" class="projekt-info glass"></div>
+
+      <div id="fehler" class="alert" role="alert" hidden></div>
+
+      <label class="dropzone glass" id="dropzone">
+        <input type="file" id="datei-input" accept=".xml,application/xml,text/xml" class="sr-only">
+        <span class="drop-icon" aria-hidden="true"><svg><use href="#i-upload"/></svg></span>
+        <span class="drop-title">FHIR-XML-Datei hierher ziehen</span>
+        <span class="drop-sub">oder <span class="drop-link">Datei auswählen</span> · Bundle oder einzelne Ressource</span>
+      </label>
+
+      <div class="beispiele">
+        <span class="beispiele-label">Kein Testfall zur Hand?</span>
+        <div id="beispiel-buttons" class="btn-row"></div>
+      </div>
+
+      <details class="erweitert glass">
+        <summary>Erweitert: eigene StructureDefinitions für einen Ad-hoc-Vergleich</summary>
+        <p>Laden Sie Profile im JSON-Format (Snapshot-Form, z. B. aus dem <code>package.tgz</code> eines IG). Sie ersetzen für den
+          jeweiligen Ressourcentyp die Profile des Projekts – nur in dieser Sitzung und nur in Ihrem Browser.</p>
+        <label class="btn btn-secondary file-btn">
+          <input type="file" id="profil-input" accept=".json,application/json" multiple class="sr-only">
+          <svg aria-hidden="true"><use href="#i-file"/></svg> Profile (JSON) auswählen
+        </label>
+        <ul id="eigene-profile" class="eigene-profile"></ul>
+      </details>
+    </section>
+
+    <!-- Schritt 3 -->
+    <section id="schritt-3" class="panel" aria-labelledby="h-schritt-3" hidden>
+      <div class="ergebnis-kopf">
+        <div>
+          <h1 id="h-schritt-3" tabindex="-1">Ergebnis</h1>
+          <p id="ergebnis-meta" class="lead"></p>
+        </div>
+        <div class="btn-row werkzeuge">
+          <button type="button" class="btn btn-secondary" id="export-csv"><svg aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
+          <button type="button" class="btn btn-secondary" id="export-json"><svg aria-hidden="true"><use href="#i-download"/></svg> JSON</button>
+          <button type="button" class="btn btn-secondary" id="drucken"><svg aria-hidden="true"><use href="#i-print"/></svg> Drucken</button>
+          <button type="button" class="btn btn-secondary" id="link-kopieren"><svg aria-hidden="true"><use href="#i-link"/></svg> Link kopieren</button>
+          <button type="button" class="btn btn-primary" id="neue-datei"><svg aria-hidden="true"><use href="#i-upload"/></svg> Neue Datei</button>
+        </div>
+      </div>
+
+      <div class="uebersicht">
+        <div class="score glass" id="score"></div>
+        <div class="kennzahlen" id="kennzahlen"></div>
+      </div>
+
+      <div class="ansicht-tabs" role="tablist" aria-label="Ansicht">
+        <button type="button" role="tab" id="tab-dashboard" aria-controls="ansicht-dashboard" aria-selected="true">Befunde</button>
+        <button type="button" role="tab" id="tab-nebeneinander" aria-controls="ansicht-nebeneinander" aria-selected="false" tabindex="-1">Nebeneinander</button>
+      </div>
+
+      <div id="ansicht-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+        <div class="filter glass">
+          <div class="chips" id="chips" role="group" aria-label="Kategorien filtern"></div>
+          <div class="filter-felder">
+            <label class="feld suche">
+              <span class="sr-only">Volltextsuche</span>
+              <svg aria-hidden="true"><use href="#i-search"/></svg>
+              <input type="search" id="suche" placeholder="Suchen: Pfad, Element, Erklärung …" autocomplete="off">
+            </label>
+            <label class="feld">
+              <span class="feld-label">Schwere</span>
+              <select id="filter-schwere">
+                <option value="">Alle</option>
+                <option value="kritisch">Kritisch</option>
+                <option value="warnung">Warnung</option>
+                <option value="info">Info</option>
+              </select>
+            </label>
+            <label class="feld">
+              <span class="feld-label">Ressource</span>
+              <select id="filter-ressource"><option value="">Alle</option></select>
+            </label>
+          </div>
+        </div>
+        <p id="treffer-info" class="treffer-info" aria-live="polite"></p>
+        <div id="befund-liste" class="befund-liste"></div>
+      </div>
+
+      <div id="ansicht-nebeneinander" role="tabpanel" aria-labelledby="tab-nebeneinander" hidden>
+        <div class="filter glass nb-filter">
+          <label class="feld">
+            <span class="feld-label">Ressource</span>
+            <select id="nb-ressource"></select>
+          </label>
+          <label class="schalter">
+            <input type="checkbox" id="nb-nur-unterschiede">
+            <span>Nur Unterschiede zeigen</span>
+          </label>
+          <p class="nb-hinweis" id="nb-profil"></p>
+        </div>
+        <div class="nb-tabelle glass" id="nb-tabelle" role="table" aria-label="MIO-Datei und EU-Profil nebeneinander"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="fusszeile">
+    <p>Ersetzt keine offizielle Validierung (z. B. HL7 FHIR Validator). Geprüft werden Kardinalitäten, Datentypen,
+      feste Werte/Muster und – soweit hinterlegt – Codesysteme. FHIRPath-Invarianten und vollständige Terminologieprüfungen sind nicht enthalten.</p>
+    <p><a href="tests/compare.test.html">Selbsttest der Vergleichslogik</a> · Keine Cookies, kein Tracking.</p>
+  </footer>
+
+  <script src="js/fhir-xml.js"></script>
+  <script src="js/compare.js"></script>
+  <script src="js/specs.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
