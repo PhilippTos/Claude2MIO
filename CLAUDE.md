@@ -64,10 +64,14 @@ Jeder Befund hat: Schwere (kritisch/Warnung/Info), FHIR-Pfad, Ressource, eine Er
 - Dateien: `config/quellen.json`, `config/mios.json` (Katalog; `art: profile` wird vom Import gepflegt, `epa-eps` als `art: modell` von Hand),
   `config/valueset-namen.json`, `tools/import.ps1`, `tools/snapshots.ps1` (beide mit UTF-8-BOM für PowerShell 5.1),
   `.github/workflows/import.yml`, `js/profilvergleich.js` (Logik), `js/mio-vergleich.js` (UI), Route `#vergleich/<a>/<b>/<Typ>[/<sdA>/<sdB>]`.
+- Bedienung (2026-10-26): Ein MIO, das auf einer Seite gewählt ist, ist auf der anderen gesperrt. Das EU Patient Summary ist als `eu-eps` wählbar
+  (Index `specs/pka-eps/eu/index.json`). Logische Modelle bieten alle Gruppen aus `mapping.json` mit Inhalt an, auch ohne FHIR-Mapping:
+  Dann gibt es „nur Strukturübersicht“ mit EHDS-Bezug. Es gibt keine geratene Zuordnung: Die EU-Arbeitsmappe ordnet nur das eHN-Modell zu, nicht EHDS.
+  EU-Obligations (`populate`) zählen im Vergleich wie mustSupport.
 - WeST ist importiert (`specs/mio/west/`). Die Patientenkurzakte (Weg A: Snapshots per HL7 FHIR Validator in der Action) wurde lokal nicht getestet,
   weil hier kein Java installiert ist.
-- PKA-Beispiele `REAL_EXAMPLE_1..4_Bundle.xml` sind NICHT freigegeben (Name „REAL“; Inhalte wirken synthetisch) und warten auf die Freigabe des Nutzers
-  über `freigegebeneBeispiele` in `quellen.json`.
+- PKA-Beispiele `REAL_EXAMPLE_1..4_Bundle.xml` hat der Nutzer am 2026-10-26 als synthetisch freigegeben (`freigegebeneBeispiele` in `quellen.json`).
+  Sie liegen in `samples/pka/` und sind im Projekt `pka-eps` als Beispieldateien eingetragen.
 - Als Quellen dienen **ausschließlich öffentliche Repositories** der GitHub-Organisation `mio42-GmbH`. Private Repos sind ausgeschlossen
   (kein Token; der Import prüft `private: false`).
 - Der Import läuft als GitHub Action, die einen Pull Request erstellt. Der Nutzer prüft und mergt selbst.

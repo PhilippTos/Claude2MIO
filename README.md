@@ -25,10 +25,10 @@ Statische Web-App, die eine **MIO-Datei (FHIR XML)** mit der passenden **EU-Spez
 
 Oben rechts auf **„MIO ↔ MIO“** umschalten:
 
-1. **MIO A** und **MIO B** wählen, z. B. „MIO ePA EU Patient Summary“ und „Wechselschnittstelle (WeST)“.
-2. **Inhalt** wählen, z. B. „Diagnose (Condition)“. Angeboten werden nur Ressourcentypen, die beide MIOs enthalten. Gibt es mehrere Profile pro Typ, wählt man eines aus.
+1. **MIO A** und **MIO B** wählen, z. B. „MIO ePA EU Patient Summary“ und „Wechselschnittstelle (WeST)“. Auch das **HL7 Europe Patient Summary (EU)** steht zur Wahl. Ein MIO, das auf einer Seite gewählt ist, ist auf der anderen gesperrt.
+2. **Inhalt** wählen, z. B. „Diagnose (Condition)“ oder „Impfung (Immunization)“. Angeboten werden alle Inhalte, die in beiden vorkommen. Gibt es mehrere Profile bzw. Gruppen pro Typ, wählt man eins aus. Inhalte, für die ein logisches Modell noch keine FHIR-Mappings hat, sind als „nur Strukturübersicht“ gekennzeichnet. Ihre Elemente werden mit Kardinalität, EHDS-Bezug und ValueSet aufgelistet, aber nicht Zeile für Zeile zugeordnet.
 3. **Vergleichen.** Das Ergebnis zeigt A und B nebeneinander, Element für Element nach FHIR-Pfad ausgerichtet:
-   - **Unterschiedlich:** in beiden vorhanden, aber Kardinalität, Datentyp, ValueSet/Binding, fester Wert/Muster oder Must Support weichen ab. Abweichende Werte sind mit „≠“ markiert.
+   - **Unterschiedlich:** in beiden vorhanden, aber Kardinalität, Datentyp, ValueSet/Binding, fester Wert/Muster oder Must Support weichen ab. Abweichende Werte sind mit „≠“ markiert. Obligations der EU-Profile (z. B. `SHALL:populate-if-known`) zählen wie Must Support.
    - **Nur in A / Nur in B:** z. B. Extensions oder Elemente, die nur ein MIO genauer festlegt.
    - **Gleich:** standardmäßig ausgeblendet.
    - **Übereinstimmung (Ring):** Anteil der gleich festgelegten Elemente unter denen, die es in beiden gibt. Wie viele Elemente überhaupt gemeinsam sind, steht daneben.

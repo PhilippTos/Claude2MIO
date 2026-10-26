@@ -119,7 +119,8 @@
           ? { ...el.binding, text: bindingText(el.binding, valueSetTitel) } : null,
         fixed: wertText(el.fixed),
         pattern: wertText(el.pattern),
-        mustSupport: el.mustSupport,
+        // EU-Profile kennzeichnen über Obligations (z. B. SHALL:populate-if-known) statt mustSupport – gleichwertig behandeln
+        mustSupport: el.mustSupport || (el.obligations || []).some(o => /populate/.test(o.code) && !/consumer/i.test(o.actor || '')),
         kurz: el.short,
         relevant: istRelevant(el),
         art: 'profil',
@@ -138,27 +139,53 @@
 
   // ---------------------------------------------------------------- Logisches Modell → Vergleichselemente
 
+  function elementeDerGruppe(modell, gruppe) {
+    return modell.elemente.filter(e => e.bereich === 'Profile' && e.pfad.split(' / ').includes(gruppe));
+  }
+
+  /**
+   * Inhaltsgruppen eines logischen Modells, die laut mapping.json einem FHIR-Ressourcentyp entsprechen
+   * und mindestens ein Element enthalten – auch ohne FHIR-Mapping.
+   */
+  function modellGruppen(modell, mapping) {
+    const gruppen = [];
+    for (const z of (mapping && mapping.zuordnungen) || []) {
+      if (!z.ressource || !z.mioGruppe) continue;
+      const els = elementeDerGruppe(modell, z.mioGruppe);
+      if (els.length <= 1) continue; // nur der Gruppenknoten selbst, keine Inhalte
+      const profilName = z.mioProfil ? z.mioProfil.split(' ')[0] : null;
+      const gemappt = profilName ? els.filter(e => (e.fhirMapping || []).some(m => m.split('.')[0] === profilName && m.includes('.'))).length : 0;
+      gruppen.push({ gruppe: z.mioGruppe, typ: z.ressource, profilName, anzahl: els.length - 1, gemappt });
+    }
+    return gruppen;
+  }
+
   /**
    * Übersetzt die Elemente einer MIO-Gruppe (z. B. „Diagnose“) aus model.json über die FHIR-Mappings.
+   * Elemente ohne FHIR-Mapping landen mit ihrem EHDS-Bezug in „nichtZuordenbar“ – es wird nichts geraten.
    * @param modell   model.json
    * @param mapping  mapping.json (Zuordnung Gruppe → Ressourcentyp/MIO-Profil)
    * @param typ      FHIR-Ressourcentyp, z. B. 'Condition'
+   * @param gruppe   optional: bestimmte Gruppe, wenn mehrere Gruppen auf denselben Typ zeigen
    */
-  function seiteAusModell(modell, mapping, typ) {
-    const zuordnung = ((mapping && mapping.zuordnungen) || [])
-      .find(z => z.ressource === typ && z.mioProfil && /^KBV_PR_/.test(z.mioProfil));
-    if (!zuordnung) return null;
-    const profilName = zuordnung.mioProfil.split(' ')[0];
-    const gruppe = zuordnung.mioGruppe;
-    const inGruppe = modell.elemente.filter(e => e.bereich === 'Profile' && e.pfad.split(' / ').includes(gruppe));
+  function seiteAusModell(modell, mapping, typ, gruppe) {
+    const g = modellGruppen(modell, mapping).find(x => x.typ === typ && (!gruppe || x.gruppe === gruppe));
+    if (!g) return null;
+    const profilName = g.profilName;
+    gruppe = g.gruppe;
+    const inGruppe = elementeDerGruppe(modell, gruppe);
     const elemente = [];
     const nachSchluessel = new Map();
     const nichtZuordenbar = [];
     for (const e of inGruppe) {
-      const pfade = (e.fhirMapping || []).filter(m => m.split('.')[0] === profilName);
+      const pfade = profilName ? (e.fhirMapping || []).filter(m => m.split('.')[0] === profilName) : [];
       if (!pfade.length) {
-        if (e.art === 'item' || !(e.fhirMapping || []).length) {
-          nichtZuordenbar.push({ name: e.name, pfad: e.pfad.split(' / ').slice(e.pfad.split(' / ').indexOf(gruppe) + 1).join(' / ') || e.name, min: e.min, max: maxText(e.max) });
+        const teilPfad = e.pfad.split(' / ').slice(e.pfad.split(' / ').indexOf(gruppe) + 1).join(' / ');
+        if (teilPfad && (e.art === 'item' || !(e.fhirMapping || []).length)) {
+          nichtZuordenbar.push({
+            name: e.name, pfad: teilPfad, min: e.min, max: maxText(e.max),
+            ehds: (e.ehdsMapping || []).join(', '), valueSet: e.valueSet ? (e.valueSet.anzeigename || e.valueSet.name) : '',
+          });
         }
         continue;
       }
@@ -211,7 +238,9 @@
     }
     return {
       art: 'modell',
-      titel: `${gruppe} (${profilName}, logisches Modell)`,
+      gruppe,
+      ohneMapping: elemente.length === 0,
+      titel: `${gruppe} (${profilName || 'ohne FHIR-Profil'}, logisches Modell)`,
       url: null,
       version: '',
       typ,
@@ -220,15 +249,9 @@
     };
   }
 
-  /** Ressourcentypen, die ein logisches Modell über FHIR-Mappings abdeckt. */
+  /** Ressourcentypen, für die ein logisches Modell Inhalte hat (mit oder ohne FHIR-Mapping). */
   function modellTypen(modell, mapping) {
-    const typen = new Set();
-    for (const z of (mapping && mapping.zuordnungen) || []) {
-      if (!z.mioProfil || !/^KBV_PR_/.test(z.mioProfil)) continue;
-      const s = seiteAusModell(modell, mapping, z.ressource);
-      if (s && s.elemente.length) typen.add(z.ressource);
-    }
-    return [...typen];
+    return [...new Set(modellGruppen(modell, mapping).map(g => g.typ))];
   }
 
   // ---------------------------------------------------------------- Vergleich
@@ -257,7 +280,7 @@
     if (!modell) {
       if (a.fixed !== b.fixed) u.push({ aspekt: 'fixed', label: 'Fester Wert', a: a.fixed || '—', b: b.fixed || '—' });
       if (a.pattern !== b.pattern) u.push({ aspekt: 'pattern', label: 'Muster', a: a.pattern || '—', b: b.pattern || '—' });
-      if (a.mustSupport !== b.mustSupport) u.push({ aspekt: 'mustsupport', label: 'Must Support', a: a.mustSupport ? 'ja' : 'nein', b: b.mustSupport ? 'ja' : 'nein' });
+      if (a.mustSupport !== b.mustSupport) u.push({ aspekt: 'mustsupport', label: 'Must Support / Obligation', a: a.mustSupport ? 'ja' : 'nein', b: b.mustSupport ? 'ja' : 'nein' });
     }
     return u;
   }
@@ -384,5 +407,5 @@
     };
   }
 
-  global.ProfilVergleich = { seiteAusProfil, seiteAusModell, modellTypen, vergleicheSeiten, normName };
+  global.ProfilVergleich = { seiteAusProfil, seiteAusModell, modellGruppen, modellTypen, vergleicheSeiten, normName };
 })(typeof window !== 'undefined' ? window : globalThis);

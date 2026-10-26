@@ -55,6 +55,7 @@
     const d = { mio, vsTitel: { ...st.vsNamen } };
     if (mio.art === 'modell') {
       [d.modell, d.mapping] = await Promise.all([Specs.ladeJson(mio.modell), Specs.ladeJson(mio.mapping)]);
+      d.gruppen = ProfilVergleich.modellGruppen(d.modell, d.mapping);
       d.typen = ProfilVergleich.modellTypen(d.modell, d.mapping);
     } else {
       d.index = await Specs.ladeJson(mio.profilIndex);
@@ -66,11 +67,15 @@
   }
 
   async function seite(d, typ, profilId) {
-    if (d.mio.art === 'modell') return { seite: ProfilVergleich.seiteAusModell(d.modell, d.mapping, typ), sdId: null };
-    const eintrag = d.index.profile.find(p => p.id === profilId) || d.index.profile.find(p => p.type === typ);
-    const sd = await Specs.ladeJson(ordner(d.mio.profilIndex) + eintrag.datei);
+    if (d.mio.art === 'modell') {
+      const s = ProfilVergleich.seiteAusModell(d.modell, d.mapping, typ, profilId || undefined);
+      return { seite: s, sdId: null, wahl: s && s.gruppe };
+    }
+    const eintrag = d.index.profile.find(p => p.id === profilId && p.type === typ) || d.index.profile.find(p => p.type === typ);
+    // Dateien im EU-Index sind relativ zum Projektordner angegeben („eu/…“), wie in specs.js
+    const sd = await Specs.ladeJson(ordner(d.mio.profilIndex) + eintrag.datei.replace(/^eu\//, ''));
     const profil = CompareLogik.normalisiereProfil(sd, d.mio.igUrl);
-    return { seite: ProfilVergleich.seiteAusProfil(profil, d.vsTitel), sdId: sd.id };
+    return { seite: ProfilVergleich.seiteAusProfil(profil, d.vsTitel), sdId: sd.id, wahl: sd.id };
   }
 
   // ------------------------------------------------------------ Auswahl
@@ -83,13 +88,28 @@
           <span>
             <span class="mv-karte-name">${esc(m.name)}</span>
             <span class="mv-karte-info">${m.version && !/^</.test(m.version) ? 'Version ' + esc(m.version) + ' · ' : ''}Stand ${esc(m.stand || '–')}${m.herkunft && m.herkunft.repo ? ' · ' + esc(m.herkunft.repo) : ''}</span>
-            <span class="mv-karte-art">${m.art === 'modell' ? 'Logisches Modell (ART-DECOR)' : 'FHIR-Profile'}</span>
+            <span class="mv-karte-art">${m.art === 'modell' ? 'Logisches Modell (ART-DECOR)' : m.kategorie === 'eu' ? 'EU-Spezifikation · FHIR-Profile' : 'FHIR-Profile'}</span>
+            <span class="mv-karte-gesperrt">bereits als ${s === 'a' ? 'B' : 'A'} gewählt</span>
           </span>
         </label>`).join('');
       $('#mv-karten-' + s).querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => {
         st[s] = inp.value;
+        sperreGegenseite();
         aktualisiereInhalt();
       }));
+    }
+    sperreGegenseite();
+  }
+
+  /** Ein MIO, das auf einer Seite gewählt ist, kann auf der anderen nicht gewählt werden. */
+  function sperreGegenseite() {
+    for (const s of ['a', 'b']) {
+      const andere = st[s === 'a' ? 'b' : 'a'];
+      $('#mv-karten-' + s).querySelectorAll('input').forEach(inp => {
+        const gesperrt = inp.value === andere;
+        inp.disabled = gesperrt;
+        inp.closest('.mv-karte').classList.toggle('gesperrt', gesperrt);
+      });
     }
   }
 
@@ -118,7 +138,10 @@
         return;
       }
       const vorher = (vorgabe && vorgabe.typ) || typSel.value;
-      typSel.innerHTML = gemeinsam.map(t => `<option value="${esc(t)}">${esc(typLabel(t))}</option>`).join('');
+      // Hinweis, wenn ein logisches Modell für diesen Typ noch keine FHIR-Mappings hat
+      const ohneMapping = t => [da, db].some(d => d.gruppen && !d.gruppen.some(g => g.typ === t && g.gemappt > 0));
+      typSel.innerHTML = gemeinsam.map(t =>
+        `<option value="${esc(t)}">${esc(typLabel(t))}${ohneMapping(t) ? ' – nur Strukturübersicht (ohne FHIR-Mapping)' : ''}</option>`).join('');
       typSel.value = gemeinsam.includes(vorher) ? vorher : (gemeinsam.includes('Condition') ? 'Condition' : gemeinsam[0]);
       typSel.disabled = false;
       start.disabled = false;
@@ -134,12 +157,22 @@
       const d = st.geladen.get(st[s]);
       const feld = $(`#mv-profil-${s}-feld`);
       const sel = $(`#mv-profil-${s}`);
-      if (!d || d.mio.art === 'modell') { feld.hidden = true; sel.innerHTML = ''; continue; }
-      const profile = d.index.profile.filter(p => p.type === typ);
-      sel.innerHTML = profile.map(p => `<option value="${esc(p.id)}">${esc(p.title || p.name)}</option>`).join('');
+      const label = feld.querySelector('.feld-label');
+      if (!d) { feld.hidden = true; sel.innerHTML = ''; continue; }
+      let optionen;
+      if (d.mio.art === 'modell') {
+        label.textContent = `Gruppe in ${s.toUpperCase()}`;
+        optionen = d.gruppen.filter(g => g.typ === typ).map(g => ({
+          wert: g.gruppe, text: `${g.gruppe} (${g.gemappt} von ${g.anzahl} Elementen mit FHIR-Mapping)`,
+        }));
+      } else {
+        label.textContent = `Profil in ${s.toUpperCase()}`;
+        optionen = d.index.profile.filter(p => p.type === typ).map(p => ({ wert: p.id, text: p.title || p.name }));
+      }
+      sel.innerHTML = optionen.map(o => `<option value="${esc(o.wert)}">${esc(o.text)}</option>`).join('');
       const wunsch = vorgabe && vorgabe['profil' + s.toUpperCase()];
-      if (wunsch && profile.some(p => p.id === wunsch)) sel.value = wunsch;
-      feld.hidden = profile.length < 2;
+      if (wunsch && optionen.some(o => o.wert === wunsch)) sel.value = wunsch;
+      feld.hidden = optionen.length < 2;
     }
   }
 
@@ -159,7 +192,7 @@
       st.ergebnis = { ...r, typ, A: sa.seite, B: sb.seite, sdA: sa.sdId, sdB: sb.sdId, namen, igA: da.mio.igUrl, igB: db.mio.igUrl };
       if (aktualisiereHash) {
         const teile = ['vergleich', st.a, st.b, typ];
-        if (sa.sdId || sb.sdId) teile.push(sa.sdId || '-', sb.sdId || '-');
+        if (sa.wahl || sb.wahl) teile.push(sa.wahl || '-', sb.wahl || '-');
         history.replaceState(null, '', '#' + teile.map(encodeURIComponent).join('/'));
       }
       renderErgebnis();
@@ -226,12 +259,27 @@
     }));
     renderTabelle();
 
+    // Logisches Modell ohne FHIR-Mapping: deutlicher Hinweis, Strukturübersicht aufklappen
+    const ohne = [['A', r.A], ['B', r.B]].filter(([, s]) => s.art === 'modell' && s.ohneMapping);
+    const hinweis = $('#mv-hinweis');
+    hinweis.hidden = !ohne.length;
+    if (ohne.length) {
+      hinweis.innerHTML = `${icon('info')}<p><strong>Nur Strukturübersicht:</strong> ${ohne.map(([seite, s]) =>
+        `Für „${esc(s.gruppe)}“ (Seite ${seite}) enthält das logische Modell noch keine FHIR-Mappings.`).join(' ')}
+        Die Elemente lassen sich deshalb nicht Zeile für Zeile zuordnen. Sie stehen unten mit Kardinalität, EHDS-Bezug und ValueSet.
+        Sobald im ART-DECOR-Modell FHIR-Mappings ergänzt sind, erscheint hier automatisch der vollständige Vergleich.</p>`;
+    }
+
     const nz = $('#mv-nicht-zuordenbar');
     const liste = [...r.nichtZuordenbar.a.map(e => ({ ...e, seite: 'A' })), ...r.nichtZuordenbar.b.map(e => ({ ...e, seite: 'B' }))];
     nz.hidden = !liste.length;
+    nz.open = ohne.length > 0;
     if (liste.length) {
       nz.querySelector('summary').textContent = `${liste.length} Elemente des logischen Modells ohne FHIR-Mapping (nicht zuordenbar)`;
-      nz.querySelector('ul').innerHTML = liste.map(e => `<li>${e.seite}: ${esc(e.pfad)} <span class="mv-leer">(${esc(e.min === null ? '?' : e.min)}..${esc(e.max)})</span></li>`).join('');
+      nz.querySelector('ul').innerHTML = liste.map(e => `
+        <li><strong>${esc(e.pfad)}</strong> <span class="mv-leer">(${esc(e.min === null || e.min === undefined ? '?' : e.min)}..${esc(e.max)})</span>
+          ${e.ehds ? `<span class="mv-wert">EHDS: ${esc(e.ehds)}</span>` : ''}
+          ${e.valueSet ? `<span class="mv-wert">ValueSet: ${esc(e.valueSet)}</span>` : ''}</li>`).join('');
     }
   }
 
@@ -258,7 +306,7 @@
       ${wert('binding', 'ValueSet', e.binding ? e.binding.text : '')}
       ${wert('fixed', 'Fester Wert', e.fixed)}
       ${wert('pattern', 'Muster', e.pattern)}
-      ${e.mustSupport || anders.has('mustsupport') ? wert('mustsupport', 'Must Support', e.mustSupport ? 'ja' : 'nein') : ''}
+      ${e.mustSupport || anders.has('mustsupport') ? wert('mustsupport', 'Must Support / Obligation', e.mustSupport ? 'ja' : 'nein') : ''}
       ${link ? `<a class="mv-wert" href="${esc(link)}" target="_blank" rel="noopener">Im IG ansehen<span class="sr-only"> (öffnet neues Fenster)</span></a>` : ''}
     </span>`;
   }

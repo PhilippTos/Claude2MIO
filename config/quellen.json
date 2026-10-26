@@ -18,6 +18,13 @@
       "profile": "FHIR-Specification",
       "abhaengigkeiten": ["KBV-Base", "HL7-Base-de"],
       "beispiele": "Example",
+      "freigegebeneBeispiele": [
+        "REAL_EXAMPLE_1_Bundle.xml",
+        "REAL_EXAMPLE_2_Bundle.xml",
+        "REAL_EXAMPLE_3_Bundle.xml",
+        "REAL_EXAMPLE_4_Bundle.xml"
+      ],
+      "freigabeHinweis": "Vom Nutzer am 2026-10-26 als synthetisch bestätigt.",
       "igUrl": null
     }
   ]

@@ -1,1 +1,40 @@
-{"hinweis":"Katalog der MIO-Inhalte für den Vergleich „MIO ↔ MIO“. Einträge mit art \u0027profile\u0027 pflegt tools/import.ps1 automatisch.","mios":[{"id":"epa-eps","name":"MIO ePA EU Patient Summary","art":"modell","version":"\u003cbitte ergänzen\u003e","stand":"2025-07-09","standHinweis":"ART-DECOR-Datensatz, Status draft (logisches Modell, noch keine FHIR-Profile)","herkunft":{"quelle":"ART-DECOR-Export (manuelle Ablage)"},"modell":"specs/pka-eps/mio/model.json","mapping":"specs/pka-eps/mapping.json","igUrl":null},{"id":"west","name":"Wechselschnittstelle (WeST)","art":"profile","version":"1.0.0-kommentierung","stand":"2026-10-22","herkunft":{"repo":"mio42-GmbH/WEST-IG","commit":"b22103155ff538ef47540ff066591f358c15b896","url":"https://github.com/mio42-GmbH/WEST-IG"},"profilIndex":"specs/mio/west/index.json","valueSetTitel":"specs/mio/west/valuesets.json","igUrl":"https://mio42-gmbh.github.io/WEST-IG/site/"}]}
+{
+  "hinweis": "Katalog der Inhalte für den Vergleich „MIO ↔ MIO“. Einträge, deren id in config/quellen.json steht, pflegt tools/import.ps1 automatisch; alle anderen von Hand.",
+  "mios": [
+    {
+      "id": "eu-eps",
+      "name": "HL7 Europe Patient Summary (EU)",
+      "kategorie": "eu",
+      "art": "profile",
+      "version": "2026-10-16",
+      "stand": "2026-10-16",
+      "herkunft": { "quelle": "HL7 Europe, CI-Build (build.fhir.org)" },
+      "profilIndex": "specs/pka-eps/eu/index.json",
+      "valueSetTitel": null,
+      "igUrl": "https://build.fhir.org/ig/hl7-eu/eps/"
+    },
+    {
+      "id": "epa-eps",
+      "name": "MIO ePA EU Patient Summary",
+      "art": "modell",
+      "version": "<bitte ergänzen>",
+      "stand": "2025-07-09",
+      "standHinweis": "ART-DECOR-Datensatz, Status draft (logisches Modell, noch keine FHIR-Profile)",
+      "herkunft": { "quelle": "ART-DECOR-Export (manuelle Ablage)" },
+      "modell": "specs/pka-eps/mio/model.json",
+      "mapping": "specs/pka-eps/mapping.json",
+      "igUrl": null
+    },
+    {
+      "id": "west",
+      "name": "Wechselschnittstelle (WeST)",
+      "art": "profile",
+      "version": "1.0.0-kommentierung",
+      "stand": "2026-10-22",
+      "herkunft": { "repo": "mio42-GmbH/WEST-IG", "commit": "b22103155ff538ef47540ff066591f358c15b896", "url": "https://github.com/mio42-GmbH/WEST-IG" },
+      "profilIndex": "specs/mio/west/index.json",
+      "valueSetTitel": "specs/mio/west/valuesets.json",
+      "igUrl": "https://mio42-gmbh.github.io/WEST-IG/site/"
+    }
+  ]
+}

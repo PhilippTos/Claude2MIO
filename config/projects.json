@@ -27,7 +27,11 @@
       "mapping": "specs/pka-eps/mapping.json",
       "beispiele": [
         { "titel": "MIO-Beispiel (synthetisch)", "datei": "samples/pka-eps/mio-eps-beispiel.xml", "seite": "mio" },
-        { "titel": "EU-Beispiel (synthetisch)", "datei": "samples/pka-eps/eu-eps-beispiel.xml", "seite": "eu" }
+        { "titel": "EU-Beispiel (synthetisch)", "datei": "samples/pka-eps/eu-eps-beispiel.xml", "seite": "eu" },
+        { "titel": "PKA: Notfalldatensatz", "datei": "samples/pka/REAL_EXAMPLE_1_Bundle.xml", "seite": "mio" },
+        { "titel": "PKA: Persönliche Erklärungen 1", "datei": "samples/pka/REAL_EXAMPLE_2_Bundle.xml", "seite": "mio" },
+        { "titel": "PKA: Persönliche Erklärungen 2", "datei": "samples/pka/REAL_EXAMPLE_3_Bundle.xml", "seite": "mio" },
+        { "titel": "PKA: Persönliche Erklärungen 3", "datei": "samples/pka/REAL_EXAMPLE_4_Bundle.xml", "seite": "mio" }
       ]
     }
   ]

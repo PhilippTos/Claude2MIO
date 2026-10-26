@@ -489,6 +489,9 @@ body:not([data-modus="mio"]) #mio-vergleich { display: none; }
 .mv-karte:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
 .mv-karte-name { display: block; font-weight: 600; }
 .mv-karte-info { display: block; font-size: .82rem; color: var(--muted); }
+.mv-karte-gesperrt { display: none; margin-top: 4px; font-size: .78rem; font-weight: 600; color: var(--muted); }
+.mv-karte.gesperrt { cursor: not-allowed; opacity: .55; transform: none; box-shadow: none; border-style: dashed; }
+.mv-karte.gesperrt .mv-karte-gesperrt { display: block; }
 .mv-karte-art { display: inline-block; margin-top: 4px; font-size: .72rem; font-weight: 700; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--border); color: var(--muted); }
 
 .mv-inhalt { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; padding: 14px 16px; margin: 16px 0; }
@@ -506,7 +509,10 @@ body:not([data-modus="mio"]) #mio-vergleich { display: none; }
 .mv-wert mark::before { content: "≠ "; font-weight: 700; }
 .mv-leer { font-style: italic; color: var(--muted); font-size: .82rem; }
 .mv-erkl { display: block; font-size: .78rem; color: var(--muted); margin-top: 4px; }
-#mv-nicht-zuordenbar ul { columns: 2 260px; margin: 10px 0 0; padding-left: 18px; font-size: .88rem; }
+#mv-nicht-zuordenbar ul { columns: 2 280px; margin: 10px 0 0; padding-left: 18px; font-size: .88rem; }
+#mv-nicht-zuordenbar li { break-inside: avoid; margin-bottom: 8px; }
+.alert.hinweis { background: color-mix(in srgb, var(--c-info) var(--tint), var(--surface-strong)); border-color: color-mix(in srgb, var(--c-info) 40%, transparent); margin-top: 16px; }
+.alert.hinweis svg { color: var(--c-info); }
 
 /* Fußzeile */
 .fusszeile { padding: 16px 0 40px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--border); }
