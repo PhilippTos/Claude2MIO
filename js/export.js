@@ -54,5 +54,15 @@
     herunterladen(JSON.stringify(daten, null, 2), dateiBasis(projektId) + '.json', 'application/json');
   }
 
-  global.Export = { alsCsv, alsJson, KATEGORIE, SCHWERE };
+  /** Allgemeiner CSV-Download (Semikolon, BOM) – z. B. für den MIO↔MIO-Vergleich. */
+  function tabelleAlsCsv(kopf, zeilen, basisName) {
+    const text = [kopf, ...zeilen].map(z => z.map(csvFeld).join(';')).join('\r\n');
+    herunterladen('﻿' + text, dateiBasis(basisName) + '.csv', 'text/csv;charset=utf-8');
+  }
+
+  function objektAlsJson(obj, basisName) {
+    herunterladen(JSON.stringify(obj, null, 2), dateiBasis(basisName) + '.json', 'application/json');
+  }
+
+  global.Export = { alsCsv, alsJson, tabelleAlsCsv, objektAlsJson, KATEGORIE, SCHWERE };
 })(window);

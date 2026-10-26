@@ -1,0 +1,72 @@
+# Automatischer Import der MIO-Profile aus ÖFFENTLICHEN Repositories von mio42-GmbH.
+# Ergebnis ist immer ein Pull Request – nichts geht ungeprüft auf main.
+# Voraussetzung: Settings → Actions → General → „Allow GitHub Actions to create and approve pull requests“.
+name: MIO-Import
+
+on:
+  schedule:
+    - cron: '0 5 * * 1'   # montags 05:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: mio-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ZWEIG: automatischer-import
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Java für den HL7 FHIR Validator
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: HL7 FHIR Validator laden
+        run: curl -sSL -o "$RUNNER_TEMP/validator_cli.jar" https://github.com/hapifhir/org.hl7.fhir.core/releases/latest/download/validator_cli.jar
+
+      - name: Snapshots für Validierungspakete erzeugen
+        shell: pwsh
+        run: ./tools/snapshots.ps1 -Validator "$env:RUNNER_TEMP/validator_cli.jar" -Ausgabe "$env:RUNNER_TEMP/mio"
+
+      - name: Profile importieren
+        shell: pwsh
+        run: |
+          ./tools/import.ps1 -SnapshotVerzeichnis "$env:RUNNER_TEMP/mio/snapshots" `
+            -QuellVerzeichnis "$env:RUNNER_TEMP/mio/quellen" -Bericht "$env:RUNNER_TEMP/bericht.md"
+          Get-Content "$env:RUNNER_TEMP/bericht.md" | Add-Content $env:GITHUB_STEP_SUMMARY
+
+      - name: Pull Request erstellen oder aktualisieren
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain -- specs config samples)" ]; then
+            echo "Keine Änderungen – kein Pull Request nötig." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$ZWEIG"
+          git add specs config samples
+          git commit -m "Automatischer Import der MIO-Profile ($(date +%Y-%m-%d))"
+          git push --force origin "$ZWEIG"
+          {
+            cat "$RUNNER_TEMP/bericht.md"
+            echo
+            echo "_Automatisch erzeugt vom Workflow „MIO-Import“. Bitte prüfen und bei Bedarf mergen._"
+          } > "$RUNNER_TEMP/pr.md"
+          if gh pr view "$ZWEIG" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$ZWEIG" --body-file "$RUNNER_TEMP/pr.md"
+          else
+            gh pr create --base main --head "$ZWEIG" --title "Automatischer Import der MIO-Profile" --body-file "$RUNNER_TEMP/pr.md"
+          fi

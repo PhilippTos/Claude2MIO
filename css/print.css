@@ -17,6 +17,14 @@ body { background: #fff !important; color: #000; font-size: 10.5pt; }
 
 #schritt-3, #ansicht-dashboard { display: block !important; }
 
+/* MIO ↔ MIO: nur Ergebnis drucken */
+.modus, .mv-auswahl, .mv-inhalt, #mio-vergleich .lead:first-of-type { display: none !important; }
+body[data-modus="mio"] #schritt-3 { display: none !important; }
+body[data-modus="mio"] #mio-vergleich, body[data-modus="mio"] #mv-ergebnis { display: block !important; }
+.nb-tabelle { max-height: none !important; overflow: visible !important; }
+.nb-zeile { break-inside: avoid; }
+#mv-nicht-zuordenbar[hidden] { display: none !important; }
+
 .glass, .befund, .kennzahl, .privacy {
   background: #fff !important; box-shadow: none !important;
   -webkit-backdrop-filter: none !important; backdrop-filter: none !important;

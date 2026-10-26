@@ -1,0 +1,24 @@
+{
+  "hinweis": "Quellen für den automatischen Import (tools/import.ps1, .github/workflows/import.yml). Erlaubt sind ausschließlich öffentliche Repositories der GitHub-Organisation mio42-GmbH.",
+  "organisation": "mio42-GmbH",
+  "quellen": [
+    {
+      "id": "west",
+      "name": "Wechselschnittstelle (WeST)",
+      "repo": "mio42-GmbH/WEST-IG",
+      "art": "ig-package",
+      "pfad": "site/package.tgz",
+      "igUrl": "https://mio42-gmbh.github.io/WEST-IG/site/"
+    },
+    {
+      "id": "pka",
+      "name": "MIO Patientenkurzakte",
+      "repo": "mio42-GmbH/Validierungspaket-MIO-Patientenkurzakte",
+      "art": "validierungspaket",
+      "profile": "FHIR-Specification",
+      "abhaengigkeiten": ["KBV-Base", "HL7-Base-de"],
+      "beispiele": "Example",
+      "igUrl": null
+    }
+  ]
+}

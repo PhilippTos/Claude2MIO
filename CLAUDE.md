@@ -59,3 +59,17 @@ Jeder Befund hat: Schwere (kritisch/Warnung/Info), FHIR-Pfad, Ressource, eine Er
 - Das KBV-URL-Muster `https://fhir.kbv.de/StructureDefinition/<Name>` ist bestätigt. Nicht belegte Profilnamen werden mit „⚠ URL unsicher“ markiert.
 - SNOMED-CT-Codes werden mit Bezeichnung veröffentlicht (Entscheidung des Nutzers).
 - Die Q3-Platzhalterdateien sind entfernt. `index.html` entsteht in Phase 3 neu als App.
+
+## Automatischer Import & MIO↔MIO-Vergleich (umgesetzt, 2026-10-26)
+- Dateien: `config/quellen.json`, `config/mios.json` (Katalog; `art: profile` wird vom Import gepflegt, `epa-eps` als `art: modell` von Hand),
+  `config/valueset-namen.json`, `tools/import.ps1`, `tools/snapshots.ps1` (beide mit UTF-8-BOM für PowerShell 5.1),
+  `.github/workflows/import.yml`, `js/profilvergleich.js` (Logik), `js/mio-vergleich.js` (UI), Route `#vergleich/<a>/<b>/<Typ>[/<sdA>/<sdB>]`.
+- WeST ist importiert (`specs/mio/west/`). Die Patientenkurzakte (Weg A: Snapshots per HL7 FHIR Validator in der Action) wurde lokal nicht getestet,
+  weil hier kein Java installiert ist.
+- PKA-Beispiele `REAL_EXAMPLE_1..4_Bundle.xml` sind NICHT freigegeben (Name „REAL“; Inhalte wirken synthetisch) und warten auf die Freigabe des Nutzers
+  über `freigegebeneBeispiele` in `quellen.json`.
+- Als Quellen dienen **ausschließlich öffentliche Repositories** der GitHub-Organisation `mio42-GmbH`. Private Repos sind ausgeschlossen
+  (kein Token; der Import prüft `private: false`).
+- Der Import läuft als GitHub Action, die einen Pull Request erstellt. Der Nutzer prüft und mergt selbst.
+- Neue Funktion „MIO ↔ MIO“: zwei MIO-Inhalte vergleichen (Profil ↔ Profil bzw. logisches Modell ↔ Profil),
+  z. B. „Diagnose“ im MIO ePA EU Patient Summary ↔ `KBV_PR_WEST_Condition` (Wechselschnittstelle, WEST-IG).

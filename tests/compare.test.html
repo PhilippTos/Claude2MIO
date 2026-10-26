@@ -32,6 +32,7 @@
 <script src="../js/fhir-xml.js"></script>
 <script src="../js/compare.js"></script>
 <script src="../js/specs.js"></script>
+<script src="../js/profilvergleich.js"></script>
 <script>
 (async function () {
   'use strict';
@@ -225,6 +226,72 @@
     const { ressourcen } = FhirXml.parseFhirXml('<Basic xmlns="http://hl7.org/fhir"><id value="b"/></Basic>');
     const e = CompareLogik.vergleicheDokument(ressourcen, [null], {});
     erwarte(e.befunde.length === 1 && e.befunde[0].kategorie === 'nur-mio' && e.befunde[0].aspekt === 'ressource', JSON.stringify(e.befunde));
+  });
+
+  // ------------------------------------------------------------ MIO ↔ MIO (profilvergleich.js)
+  const sdMini = (id, els) => CompareLogik.normalisiereProfil({ resourceType: 'StructureDefinition', id, url: 'http://example.org/' + id,
+    name: id, title: id, type: 'Condition', snapshot: { element: [{ id: 'Condition', path: 'Condition', min: 0, max: '*' }, ...els] } }, null);
+  const E = (id, min, max, extra) => ({ id, path: id.replace(/:[^.]*/g, ''), min, max, type: [{ code: 'CodeableConcept' }], ...(extra || {}) });
+  const EXT = (slice, url, min) => ({ id: 'Condition.extension:' + slice, path: 'Condition.extension', sliceName: slice, min, max: '1', type: [{ code: 'Extension', profile: [url] }] });
+  const profA = sdMini('A', [
+    E('Condition.code', 1, '1', { binding: { strength: 'required', valueSet: 'http://example.org/vs/icd' } }),
+    E('Condition.severity', 0, '1', { mustSupport: true }),
+    { id: 'Condition.extension', path: 'Condition.extension', min: 0, max: '*', type: [{ code: 'Extension' }], slicing: { discriminator: [{ type: 'value', path: 'url' }], rules: 'open' } },
+    EXT('feststellung', 'http://hl7.org/fhir/StructureDefinition/condition-assertedDate', 0),
+    EXT('nurA', 'http://example.org/ext/nur-a', 1),
+    E('Condition.language', 0, '1', { type: [{ code: 'code' }] }),
+  ]);
+  const profB = sdMini('B', [
+    E('Condition.code', 0, '1', { binding: { strength: 'required', valueSet: 'http://example.org/vs/snomed' } }),
+    E('Condition.severity', 0, '1', { mustSupport: true }),
+    { id: 'Condition.extension', path: 'Condition.extension', min: 0, max: '*', type: [{ code: 'Extension' }], slicing: { discriminator: [{ type: 'value', path: 'url' }], rules: 'open' } },
+    EXT('assertedDate', 'http://hl7.org/fhir/StructureDefinition/condition-assertedDate', 0),
+    E('Condition.bodySite', 1, '*'),
+  ]);
+  const pv = () => ProfilVergleich.vergleicheSeiten(ProfilVergleich.seiteAusProfil(profA, {}), ProfilVergleich.seiteAusProfil(profB, {}), { a: 'A', b: 'B' });
+  const zeile = (r, id) => r.zeilen.find(z => (z.a && z.a.elementId === id) || (z.b && z.b.elementId === id));
+
+  pruefe('MIO↔MIO: UNTERSCHIEDLICH – Kardinalität und ValueSet mit Wert A und B', () => {
+    const z = zeile(pv(), 'Condition.code');
+    erwarte(z && z.kategorie === 'unterschiedlich', JSON.stringify(z && z.kategorie));
+    const k = z.unterschiede.find(u => u.aspekt === 'kardinalitaet');
+    erwarte(k && k.a === '1..1' && k.b === '0..1', 'Kardinalität falsch: ' + JSON.stringify(k));
+    erwarte(z.unterschiede.some(u => u.aspekt === 'binding'), 'Binding-Unterschied fehlt');
+  });
+  pruefe('MIO↔MIO: GLEICH – identisches Element', () => {
+    const z = zeile(pv(), 'Condition.severity');
+    erwarte(z && z.kategorie === 'gleich', JSON.stringify(z && z.kategorie));
+  });
+  pruefe('MIO↔MIO: Extension-Slices werden über die URL zugeordnet, auch bei anderem Slice-Namen', () => {
+    const z = zeile(pv(), 'Condition.extension:feststellung');
+    erwarte(z && z.a && z.b && z.b.elementId === 'Condition.extension:assertedDate' && z.kategorie === 'gleich', JSON.stringify(z && z.kategorie));
+  });
+  pruefe('MIO↔MIO: NUR IN A / NUR IN B', () => {
+    const r = pv();
+    erwarte(zeile(r, 'Condition.extension:nurA').kategorie === 'nur-a', 'nur-a nicht erkannt');
+    erwarte(zeile(r, 'Condition.bodySite').kategorie === 'nur-b', 'nur-b nicht erkannt');
+  });
+  pruefe('MIO↔MIO: unveränderte Basiselemente nur einer Seite werden ausgeblendet', () => {
+    erwarte(!zeile(pv(), 'Condition.language'), 'Condition.language sollte nicht erscheinen');
+  });
+  pruefe('MIO↔MIO: logisches Modell ↔ Profil über FHIR-Mapping, ValueSet-Abgleich über Namen', () => {
+    const modell = { elemente: [
+      { name: 'Diagnose', pfad: 'Profile / X / Diagnose', bereich: 'Profile', art: 'group', min: 0, max: '*', fhirMapping: ['KBV_PR_T_Condition'] },
+      { name: 'Klinischer Status', pfad: 'Profile / X / Diagnose / Klinischer Status', bereich: 'Profile', art: 'item', min: 0, max: '1',
+        fhirMapping: ['KBV_PR_T_Condition.clinicalStatus'], valueSet: { name: 'ConditionClinicalStatusCodes', anzeigename: 'ConditionClinicalStatusCodes', staerke: 'required' } },
+      { name: 'Freitext', pfad: 'Profile / X / Diagnose / Freitext', bereich: 'Profile', art: 'item', min: 0, max: '1', fhirMapping: [] },
+    ] };
+    const mapping = { zuordnungen: [{ mioGruppe: 'Diagnose', mioProfil: 'KBV_PR_T_Condition', ressource: 'Condition' }] };
+    const seiteM = ProfilVergleich.seiteAusModell(modell, mapping, 'Condition');
+    erwarte(seiteM && seiteM.elemente.length === 1 && seiteM.nichtZuordenbar.length === 1, 'Modellseite falsch: ' + JSON.stringify(seiteM && seiteM.nichtZuordenbar));
+    const profC = sdMini('C', [E('Condition.clinicalStatus', 0, '1', { binding: { strength: 'required', valueSet: 'http://hl7.org/fhir/ValueSet/condition-clinical' } })]);
+    const r = ProfilVergleich.vergleicheSeiten(seiteM, ProfilVergleich.seiteAusProfil(profC, { 'http://hl7.org/fhir/ValueSet/condition-clinical': 'Condition Clinical Status Codes' }));
+    const z = r.zeilen.find(x => x.pfad === 'Condition.clinicalStatus');
+    erwarte(z && z.kategorie === 'gleich', 'Erwartet gleich, ist ' + (z && z.kategorie) + ' ' + JSON.stringify(z && z.unterschiede));
+  });
+  pruefe('MIO↔MIO: Ähnlichkeits-Score zählt nur relevante Zeilen', () => {
+    const r = pv();
+    erwarte(r.score !== null && r.score > 0 && r.score < 100, 'Score: ' + r.score);
   });
 
   // ------------------------------------------------------------ Integration (benötigt Webserver)

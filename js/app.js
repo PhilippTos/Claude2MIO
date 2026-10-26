@@ -491,8 +491,27 @@
 
   // ------------------------------------------------------------ Routing & Start
 
+  function setzeModus(modus) {
+    const vorher = document.body.dataset.modus;
+    document.body.dataset.modus = modus;
+    $('#modus-datei').toggleAttribute('aria-current', modus === 'datei');
+    $('#modus-mio').toggleAttribute('aria-current', modus === 'mio');
+    if (modus === 'datei') $('#modus-datei').setAttribute('aria-current', 'page');
+    else $('#modus-mio').setAttribute('aria-current', 'page');
+    $('#mio-vergleich').hidden = modus !== 'mio';
+    return vorher !== modus;
+  }
+
   function route() {
-    const id = decodeURIComponent(location.hash.replace(/^#/, ''));
+    const hash = location.hash.replace(/^#/, '');
+    const teile = hash.split('/');
+    if (teile[0] === 'vergleich') {
+      const gewechselt = setzeModus('mio');
+      MioVergleichUI.oeffne(teile.slice(1), gewechselt);
+      return;
+    }
+    setzeModus('datei');
+    const id = decodeURIComponent(hash);
     if (id) waehleProjekt(id);
     else zeigeSchritt(1, false);
   }

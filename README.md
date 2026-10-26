@@ -21,6 +21,40 @@ Statische Web-App, die eine **MIO-Datei (FHIR XML)** mit der passenden **EU-Spez
 
 **Eigene Profile:** Unter „Erweitert“ lassen sich StructureDefinitions (JSON, Snapshot-Form) für einen Ad-hoc-Vergleich laden. Sie gelten nur in der laufenden Sitzung.
 
+## MIO ↔ MIO: zwei MIO-Inhalte vergleichen
+
+Oben rechts auf **„MIO ↔ MIO“** umschalten:
+
+1. **MIO A** und **MIO B** wählen, z. B. „MIO ePA EU Patient Summary“ und „Wechselschnittstelle (WeST)“.
+2. **Inhalt** wählen, z. B. „Diagnose (Condition)“. Angeboten werden nur Ressourcentypen, die beide MIOs enthalten. Gibt es mehrere Profile pro Typ, wählt man eines aus.
+3. **Vergleichen.** Das Ergebnis zeigt A und B nebeneinander, Element für Element nach FHIR-Pfad ausgerichtet:
+   - **Unterschiedlich:** in beiden vorhanden, aber Kardinalität, Datentyp, ValueSet/Binding, fester Wert/Muster oder Must Support weichen ab. Abweichende Werte sind mit „≠“ markiert.
+   - **Nur in A / Nur in B:** z. B. Extensions oder Elemente, die nur ein MIO genauer festlegt.
+   - **Gleich:** standardmäßig ausgeblendet.
+   - **Übereinstimmung (Ring):** Anteil der gleich festgelegten Elemente unter denen, die es in beiden gibt. Wie viele Elemente überhaupt gemeinsam sind, steht daneben.
+
+Slices werden über die Extension-URL bzw. ein festes Codesystem zugeordnet, ersatzweise über den Slice-Namen. **Logische Modelle** (ART-DECOR, z. B. ePA EU Patient Summary) werden über ihre FHIR-Mappings verglichen. Elemente ohne Mapping erscheinen gesondert als „nicht zuordenbar“, ValueSets werden dort nur über den Namen abgeglichen.
+
+Teilbarer Link, z. B.: `…/#vergleich/epa-eps/west/Condition`
+
+## Automatischer Import aus mio42-Repositories
+
+Die MIO-Profile für „MIO ↔ MIO“ kommen **ausschließlich aus öffentlichen Repositories** der GitHub-Organisation `mio42-GmbH`. Private Repositories werden nicht genutzt; der Import prüft das vor jedem Download.
+
+- **Quellenliste:** `config/quellen.json`. Ein neuer Eintrag genügt, eine Code-Änderung ist nicht nötig.
+  - `ig-package`: veröffentlichtes `package.tgz` eines IG (z. B. `WEST-IG/site/package.tgz`) mit fertigen Snapshots.
+  - `validierungspaket`: Profile ohne Snapshot (z. B. `Validierungspaket-MIO-Patientenkurzakte`). Die Snapshots erzeugt der Workflow mit dem HL7 FHIR Validator.
+- **Workflow** `.github/workflows/import.yml`: läuft montags automatisch und bei Bedarf per Hand („Actions → MIO-Import → Run workflow“). Er aktualisiert `specs/mio/`, `config/mios.json` und ggf. `samples/` und öffnet dazu einen **Pull Request**. Erst nach deinem Merge geht die Änderung live.
+  - Einmalig nötig: *Settings → Actions → General → „Allow GitHub Actions to create and approve pull requests“* aktivieren.
+- **Beispieldateien** aus den Repositories werden nur übernommen, wenn sie in `config/quellen.json` unter `freigegebeneBeispiele` stehen. Vorher bitte prüfen, dass sie synthetisch sind.
+- **Lokal** (nur IG-Packages, ohne Snapshot-Erzeugung):
+
+```bash
+powershell -ExecutionPolicy Bypass -File tools/import.ps1 -Nur west
+```
+
+- **Zusätzliche ValueSet-Namen** (z. B. FHIR-Core-ValueSets für den Abgleich mit ART-DECOR-Namen) stehen in `config/valueset-namen.json`.
+
 ## Vergleichskategorien
 
 | Kategorie | Bedeutung | Schwere |
@@ -82,7 +116,8 @@ Danach `http://localhost:8080/` öffnen. Den Selbsttest der Vergleichslogik gibt
 ## Technik
 
 - Rein statisch: HTML, CSS, JavaScript, ohne Build-Schritt und ohne Bibliotheken. Die Schrift „Inter“ kommt über Google Fonts mit System-Fallback.
-- `js/fhir-xml.js` liest das XML ein (DOMParser), `js/compare.js` enthält die Vergleichslogik (ohne DOM), `js/specs.js` lädt die Daten, `js/app.js` steuert die Oberfläche und `js/export.js` den Export.
+- `js/fhir-xml.js` liest das XML ein (DOMParser), `js/compare.js` enthält die Vergleichslogik Datei ↔ EU-Spec (ohne DOM), `js/profilvergleich.js` die Logik MIO ↔ MIO (ohne DOM), `js/specs.js` lädt die Daten, `js/app.js` und `js/mio-vergleich.js` steuern die Oberfläche, `js/export.js` den Export.
+- `tools/import.ps1` und `tools/snapshots.ps1` übernehmen den Import (PowerShell 5.1 und 7).
 - Hell/Dunkel folgt dem System und ist umschaltbar. Die Oberfläche ist per Tastatur bedienbar und zeigt Status immer mit Icon und Text, nicht nur über Farbe.
 - Veröffentlicht über GitHub Pages (Branch `main`, Ordner root). `.nojekyll` sorgt dafür, dass alle Ordner ausgeliefert werden.
 
@@ -90,4 +125,5 @@ Danach `http://localhost:8080/` öffnen. Den Selbsttest der Vergleichslogik gibt
 
 - HL7 Europe Patient Summary: CC0-1.0, HL7 Europe (Stand: CI-Build vom 16.10.2026).
 - MIO ePA EU Patient Summary: Kassenärztliche Bundesvereinigung (KBV) / mio42.
+- Wechselschnittstelle (WeST): mio42 GmbH, `kbv.mio.west` (CC0-1.0), aus dem öffentlichen Repository `mio42-GmbH/WEST-IG`.
 - Enthält SNOMED-CT-Codes mit Bezeichnungen (in den MIO-ValueSets und Beispielen). SNOMED CT® ist eine Marke von SNOMED International. Für die Nutzung gelten die Bedingungen der jeweiligen nationalen Lizenz.

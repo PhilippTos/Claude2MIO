@@ -35,6 +35,8 @@
     <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-nur-a" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 16.5l3-9 3 9M10 13.5h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-nur-b" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 7.5h3.2a2.1 2.1 0 0 1 0 4.2H9.5zm0 4.2h3.6a2.4 2.4 0 0 1 0 4.8H9.5z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
     <symbol id="i-arrows" viewBox="0 0 24 24"><path d="M5 8h13m0 0-3.5-3.5M18 8l-3.5 3.5M19 16H6m0 0 3.5-3.5M6 16l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   </svg>
 
@@ -49,6 +51,10 @@
         <p class="brand-sub">Unterschiede zwischen MIO-Dateien und EU-Spezifikationen</p>
       </div>
     </div>
+    <nav class="modus" aria-label="Funktion wählen">
+      <a href="#" id="modus-datei" class="modus-link">Datei ↔ EU-Spec</a>
+      <a href="#vergleich" id="modus-mio" class="modus-link">MIO ↔ MIO</a>
+    </nav>
     <button type="button" class="btn btn-ghost theme-toggle" id="theme-toggle" aria-label="Farbschema: automatisch">
       <svg aria-hidden="true"><use href="#i-auto"/></svg><span class="theme-label">Auto</span>
     </button>
@@ -178,6 +184,76 @@
         <div class="nb-tabelle glass" id="nb-tabelle" role="table" aria-label="MIO-Datei und EU-Profil nebeneinander"></div>
       </div>
     </section>
+
+    <!-- MIO ↔ MIO -->
+    <section id="mio-vergleich" class="panel" aria-labelledby="h-mio" hidden>
+      <h1 id="h-mio" tabindex="-1">Zwei MIO-Inhalte vergleichen</h1>
+      <p class="lead">Wie ist z. B. die Diagnose in einem MIO im Vergleich zu einem anderen aufgebaut? Wählen Sie zwei MIOs und einen Inhalt.</p>
+
+      <div class="mv-auswahl">
+        <fieldset class="mv-seite glass">
+          <legend><span class="seiten-marke" data-seite="a">A</span> Erstes MIO</legend>
+          <div class="mv-karten" id="mv-karten-a"></div>
+        </fieldset>
+        <fieldset class="mv-seite glass">
+          <legend><span class="seiten-marke" data-seite="b">B</span> Zweites MIO</legend>
+          <div class="mv-karten" id="mv-karten-b"></div>
+        </fieldset>
+      </div>
+
+      <div class="mv-inhalt glass">
+        <label class="feld">
+          <span class="feld-label">Inhalt</span>
+          <select id="mv-typ" disabled><option>Bitte zuerst zwei MIOs wählen</option></select>
+        </label>
+        <label class="feld" id="mv-profil-a-feld" hidden>
+          <span class="feld-label">Profil in A</span>
+          <select id="mv-profil-a"></select>
+        </label>
+        <label class="feld" id="mv-profil-b-feld" hidden>
+          <span class="feld-label">Profil in B</span>
+          <select id="mv-profil-b"></select>
+        </label>
+        <button type="button" class="btn btn-primary" id="mv-start" disabled><svg aria-hidden="true"><use href="#i-arrows"/></svg> Vergleichen</button>
+      </div>
+
+      <div id="mv-fehler" class="alert" role="alert" hidden></div>
+
+      <div id="mv-ergebnis" hidden>
+        <div class="ergebnis-kopf">
+          <div>
+            <h2 id="mv-titel"></h2>
+            <p id="mv-meta" class="lead"></p>
+          </div>
+          <div class="btn-row werkzeuge">
+            <button type="button" class="btn btn-secondary" id="mv-csv"><svg aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
+            <button type="button" class="btn btn-secondary" id="mv-json"><svg aria-hidden="true"><use href="#i-download"/></svg> JSON</button>
+            <button type="button" class="btn btn-secondary" id="mv-drucken"><svg aria-hidden="true"><use href="#i-print"/></svg> Drucken</button>
+            <button type="button" class="btn btn-secondary" id="mv-link"><svg aria-hidden="true"><use href="#i-link"/></svg> Link kopieren</button>
+          </div>
+        </div>
+        <div class="uebersicht">
+          <div class="score glass" id="mv-score"></div>
+          <div class="kennzahlen" id="mv-kennzahlen"></div>
+        </div>
+        <div class="filter glass">
+          <div class="chips" id="mv-chips" role="group" aria-label="Kategorien filtern"></div>
+          <div class="filter-felder">
+            <label class="feld suche">
+              <span class="sr-only">Volltextsuche</span>
+              <svg aria-hidden="true"><use href="#i-search"/></svg>
+              <input type="search" id="mv-suche" placeholder="Suchen: Element, Pfad, MIO-Bezeichnung …" autocomplete="off">
+            </label>
+          </div>
+        </div>
+        <p id="mv-treffer" class="treffer-info" aria-live="polite"></p>
+        <div class="nb-tabelle mv-tabelle glass" id="mv-tabelle" role="table" aria-label="MIO A und MIO B nebeneinander"></div>
+        <details class="erweitert glass" id="mv-nicht-zuordenbar" hidden>
+          <summary></summary>
+          <ul></ul>
+        </details>
+      </div>
+    </section>
   </main>
 
   <footer class="fusszeile">
@@ -189,7 +265,9 @@
   <script src="js/fhir-xml.js"></script>
   <script src="js/compare.js"></script>
   <script src="js/specs.js"></script>
+  <script src="js/profilvergleich.js"></script>
   <script src="js/export.js"></script>
+  <script src="js/mio-vergleich.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
