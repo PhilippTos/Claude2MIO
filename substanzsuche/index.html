@@ -11,6 +11,7 @@
 :root{
   --bg:#EEF2F4; --surface:#FFFFFF; --ink:#13263A; --muted:#5B6B7B; --line:#C9D3DB;
   --accent:#0E5C66; --accent-soft:#DCEDEE; --mark:#FFE07A; --mark-ink:#13263A;
+  --group:#4A4E9E; --group-soft:#ECEDF8; --new:#FFF6D6; --warn:#B3261E;
   color-scheme:light;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
@@ -19,12 +20,14 @@
   :root:not([data-theme="light"]){
     --bg:#0F1A24; --surface:#172633; --ink:#E6EDF2; --muted:#93A4B3; --line:#2C3F50;
     --accent:#5FC4CF; --accent-soft:#1B3A42; --mark:#8A6D12; --mark-ink:#FFF4CC;
+    --group:#AEB2F2; --group-soft:#252A48; --new:#3A3216; --warn:#FF8A80;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0F1A24; --surface:#172633; --ink:#E6EDF2; --muted:#93A4B3; --line:#2C3F50;
   --accent:#5FC4CF; --accent-soft:#1B3A42; --mark:#8A6D12; --mark-ink:#FFF4CC;
+  --group:#AEB2F2; --group-soft:#252A48; --new:#3A3216; --warn:#FF8A80;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:inherit}
@@ -52,12 +55,21 @@ ul{list-style:none; margin:0; padding:6px 0; position:absolute; left:0; right:0;
   background:var(--surface); border:2px solid var(--accent); border-top:1px solid var(--line);
   border-radius:0 0 14px 14px; max-height:min(420px,52vh); overflow-y:auto;
   box-shadow:0 18px 30px -18px rgba(10,30,45,.45)}
-li{display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:10px 18px; cursor:pointer}
-li[aria-selected="true"]{background:var(--accent-soft)}
-li .name{font-weight:700}
-li .via{display:block; font-size:.88rem; color:var(--muted); margin-top:1px}
-li .code{flex:none; font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums}
-li.empty{display:block; cursor:default; color:var(--muted)}
+#list li{display:grid; grid-template-columns:22px minmax(0,1fr) auto; align-items:center; gap:12px;
+  padding:10px 18px 10px 14px; cursor:pointer; border-left:4px solid transparent}
+#list li[aria-selected="true"]{background:var(--accent-soft); border-left-color:var(--accent)}
+#list li .ico{color:var(--accent); display:flex}
+#list li .name{font-weight:700}
+#list li .via{display:block; font-size:.88rem; color:var(--muted); margin-top:1px}
+#list li .code{font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums; text-align:right}
+/* Sammelbegriff: eigene Farbe, Stapel-Symbol, Etikett und Pfeil – nicht nur Farbe als Merkmal */
+#list li.group{background:var(--group-soft); border-left-color:var(--group)}
+#list li.group[aria-selected="true"]{background:var(--group-soft); box-shadow:inset 0 0 0 2px var(--group)}
+#list li.group .ico{color:var(--group)}
+#list li.group .code{color:var(--group); font-weight:700}
+.badge{display:inline-block; margin-left:.5em; padding:1px 7px; border-radius:4px; font-size:.72rem; font-weight:700;
+  letter-spacing:.04em; text-transform:uppercase; vertical-align:.15em; color:var(--surface); background:var(--group)}
+#list li.empty{display:block; cursor:default; color:var(--muted)}
 mark{background:var(--mark); color:var(--mark-ink); border-radius:3px; padding:0 1px}
 .bottom{align-self:start; width:100%; max-width:640px; justify-self:center; padding:28px 0 32px}
 .card{background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--accent);
@@ -73,7 +85,34 @@ button.chip:hover{border-color:var(--accent); color:var(--accent)}
 button.chip:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
 .card h3+.chips{margin-bottom:1rem}
 .card .chips:last-child{margin-bottom:0}
-li.group .name::after{content:""; display:inline-block; width:.55em; height:.55em; margin-left:.45em; border-radius:2px; background:var(--accent); vertical-align:.12em}
+.card.group-card{border-left-color:var(--group)}
+.card .added{margin:0 0 .9rem; font-size:.95rem; color:var(--accent); font-weight:700}
+/* Liste der ausgewählten Substanzen */
+.picked{margin-top:22px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 20px}
+.picked-head{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px; margin-bottom:10px}
+.picked h2{margin:0; font-size:1.15rem}
+.picked h2 .n{display:inline-block; min-width:1.6em; margin-left:.35em; padding:0 6px; border-radius:999px; text-align:center;
+  font-size:.9rem; background:var(--accent-soft); color:var(--accent); font-variant-numeric:tabular-nums}
+.picked-actions{display:flex; gap:8px; flex-wrap:wrap}
+.btn{font:inherit; font-size:.9rem; color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:8px;
+  padding:5px 12px; cursor:pointer}
+.btn:hover{border-color:var(--accent); color:var(--accent)}
+.btn.warn{border-color:var(--warn); color:var(--warn)}
+.btn:focus-visible,.rm:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+.picked ol{list-style:none; margin:0; padding:0; counter-reset:p}
+.picked li{display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:baseline; gap:4px 14px;
+  padding:9px 6px; border-top:1px solid var(--line); counter-increment:p; border-radius:6px; transition:background-color 1.2s}
+.picked li:first-child{border-top:0}
+.picked li.fresh{background:var(--new); transition:none}
+.picked time{font-size:.88rem; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+.picked time::before{content:counter(p) ". "; color:var(--muted)}
+.picked .sub{font-weight:700}
+.picked .sub small{display:block; font-weight:400; font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums}
+.rm{border:0; background:none; color:var(--muted); font:inherit; font-size:1.25rem; line-height:1; padding:2px 6px; border-radius:6px; cursor:pointer}
+.rm:hover{color:var(--ink)}
+.picked .hint{margin:0; color:var(--muted); font-size:.95rem}
+.picked .note{margin:10px 0 0; color:var(--muted); font-size:.82rem}
+@media (max-width:520px){ .picked li{grid-template-columns:minmax(0,1fr) auto} .picked time{grid-column:1/-1} }
 footer{color:var(--muted); font-size:.85rem; text-align:center; margin-top:22px}
 .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
 @media (max-width:520px){ h1{font-size:1.5rem} input{font-size:1.1rem; padding:15px 0} }
@@ -100,6 +139,18 @@ footer{color:var(--muted); font-size:.85rem; text-align:center; margin-top:22px}
 
   <div class="bottom">
     <div id="detail" aria-live="polite"></div>
+    <section class="picked" aria-labelledby="pickedHead">
+      <div class="picked-head">
+        <h2 id="pickedHead">Ausgewählte Substanzen<span class="n" id="pickedN">0</span></h2>
+        <div class="picked-actions" id="pickedActions" hidden>
+          <button type="button" class="btn" id="pickedCopy">Liste kopieren</button>
+          <button type="button" class="btn" id="pickedClear">Liste leeren</button>
+        </div>
+      </div>
+      <p class="hint" id="pickedEmpty">Noch keine Substanz ausgewählt. Jede Substanz, die Sie in der Suche auswählen, erscheint hier mit Datum und Uhrzeit.</p>
+      <ol id="pickedList" aria-live="polite"></ol>
+      <p class="note">Die Liste wird nur in diesem Browser gespeichert.</p>
+    </section>
     <footer id="stand"></footer>
   </div>
 </main>
@@ -527,6 +578,9 @@ function highlight(text,q){
   return esc(text.slice(0,a))+"<mark>"+esc(text.slice(a,b))+"</mark>"+esc(text.slice(b));
 }
 const typLabel = ty => (TYP[ty]||{}).label || "";
+// Symbole im Dropdown: Einzelsubstanz (Punkt) und Sammelbegriff (Stapel)
+const ICON_K = '<span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5.5" fill="currentColor"/></svg></span>';
+const ICON_G = '<span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 3 7.5 12 12l9-4.5z" fill="currentColor"/><path d="m3 12 9 4.5 9-4.5M3 16.5 12 21l9-4.5"/></svg></span>';
 
 const field=document.getElementById("field"), input=document.getElementById("q"), list=document.getElementById("list"),
       clearBtn=document.getElementById("clear"), detail=document.getElementById("detail");
@@ -540,8 +594,9 @@ function render(){
     const t=r.t, own=t.type==="K"||t.type==="G";
     const name = t.g ? G[t.o].name : K[t.o].de;
     const via = own ? "" : `<span class="via">gefunden über ${highlight(t.text,q)} (${esc(typLabel(t.type))})</span>`;
-    const right = t.g ? `${G[t.o].members.length} Substanzen` : K[t.o].code;
-    return `<li role="option" id="opt${i}" data-i="${i}" class="${t.g?"group":""}" aria-selected="${i===active}"><span><span class="name">${own?highlight(name,q):esc(name)}</span>${via}</span><span class="code">${right}</span></li>`;
+    const right = t.g ? `${G[t.o].members.length} Substanzen ›` : K[t.o].code;
+    const badge = t.g ? '<span class="badge">Sammelbegriff</span>' : "";
+    return `<li role="option" id="opt${i}" data-i="${i}" class="${t.g?"group":""}" aria-selected="${i===active}">${t.g?ICON_G:ICON_K}<span><span class="name">${own?highlight(name,q):esc(name)}</span>${badge}${via}</span><span class="code">${right}</span></li>`;
   }).join("") : '<li class="empty">Keine Substanz gefunden. Prüfen Sie die Schreibweise oder suchen Sie nach Wirkstoff, Handelsname oder Sammelbegriff.</li>';
   list.hidden=false; field.classList.add("open"); input.setAttribute("aria-expanded","true");
   input.setAttribute("aria-activedescendant", active>=0?"opt"+active:"");
@@ -557,18 +612,59 @@ const chipG = i => `<button type="button" class="chip" data-g="${i}">${esc(G[i].
 const synChips = syn => syn.map(([t,ty])=>`<span class="chip">${esc(t)} <small>${esc(typLabel(ty))}</small></span>`).join("");
 function showConcept(i){
   const k=K[i]; input.value=k.de; clearBtn.hidden=false; close();
-  const groups=parentsOf[i];
+  const groups=parentsOf[i], p=pick(k.code);
   detail.innerHTML=`<div class="card"><h2>${esc(k.de)}</h2><p class="meta">SNOMED CT ${k.code}${k.en?", "+esc(k.en):""}</p>
+    <p class="added">${p.neu?"Zur Liste hinzugefügt":"Bereits in der Liste seit"} ${esc(fmtTime(p.t))}</p>
     <h3>Synonyme und Schreibweisen</h3><div class="chips">${synChips(k.syn)||"—"}</div>
     ${groups.length?`<h3>Gehört zu</h3><div class="chips">${groups.map(chipG).join("")}</div>`:""}</div>`;
 }
 function showGroup(i){
   const g=G[i]; input.value=g.name; clearBtn.hidden=false; close();
-  detail.innerHTML=`<div class="card"><h2>${esc(g.name)}</h2><p class="meta">Sammelbegriff mit ${g.members.length} Substanzen${g.info?", "+esc(g.info):""}</p>
+  detail.innerHTML=`<div class="card group-card"><h2>${esc(g.name)}<span class="badge">Sammelbegriff</span></h2><p class="meta">Sammelbegriff mit ${g.members.length} Substanzen${g.info?", "+esc(g.info):""}</p>
     ${g.sub.length?`<h3>Enthält Untergruppen</h3><div class="chips">${g.sub.map(chipG).join("")}</div>`:""}
     <h3>Substanz auswählen</h3><div class="chips">${g.members.map(chipK).join("")}</div>
     ${g.syn.length?`<h3>Suchbegriffe</h3><div class="chips">${synChips(g.syn)}</div>`:""}</div>`;
 }
+/* ---------- Liste der ausgewählten Substanzen (nur im Browser gespeichert) ---------- */
+const STORE="substanzsuche.auswahl", pickedList=document.getElementById("pickedList"),
+      pickedClear=document.getElementById("pickedClear"), pickedCopy=document.getElementById("pickedCopy");
+let picked=[], armed=null;
+try { picked=(JSON.parse(localStorage.getItem(STORE))||[]).filter(p=>p && kByCode.has(p.code) && p.t); } catch(e){ picked=[]; }
+const save=()=>{ try { localStorage.setItem(STORE,JSON.stringify(picked)); } catch(e){} };
+const fmtTime=t=>new Date(t).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+// Fügt eine Substanz hinzu; ist sie schon in der Liste, bleibt der erste Zeitstempel erhalten
+function pick(code){
+  let p=picked.find(x=>x.code===code), neu=!p;
+  if (neu){ p={code,t:new Date().toISOString()}; picked.push(p); save(); }
+  renderPicked(code); return {...p,neu};
+}
+function renderPicked(fresh){
+  disarm();
+  document.getElementById("pickedN").textContent=picked.length;
+  document.getElementById("pickedEmpty").hidden=picked.length>0;
+  document.getElementById("pickedActions").hidden=!picked.length;
+  pickedList.innerHTML=picked.map(p=>{ const k=K[kByCode.get(p.code)];
+    return `<li data-code="${p.code}"${p.code===fresh?' class="fresh"':""}><time datetime="${p.t}">${esc(fmtTime(p.t))}</time>
+      <span class="sub">${esc(k.de)}<small>SNOMED CT ${p.code}</small></span>
+      <button type="button" class="rm" data-rm="${p.code}" aria-label="${esc(k.de)} aus der Liste entfernen">×</button></li>`; }).join("");
+  if (fresh) setTimeout(()=>{ const li=pickedList.querySelector("li.fresh"); if (li) li.classList.remove("fresh"); },900);
+}
+function disarm(){ clearTimeout(armed); armed=null; pickedClear.textContent="Liste leeren"; pickedClear.classList.remove("warn"); }
+pickedList.addEventListener("click",e=>{ const b=e.target.closest("button[data-rm]"); if (!b) return;
+  picked=picked.filter(p=>p.code!==b.dataset.rm); save(); renderPicked(); });
+pickedClear.addEventListener("click",()=>{   // zweistufig statt confirm()
+  if (!armed){ pickedClear.textContent="Wirklich alle entfernen?"; pickedClear.classList.add("warn"); armed=setTimeout(disarm,4000); return; }
+  picked=[]; save(); renderPicked();
+});
+pickedCopy.addEventListener("click",()=>{
+  const txt=["Zeitpunkt\tSubstanz\tSNOMED CT"].concat(picked.map(p=>`${fmtTime(p.t)}\t${K[kByCode.get(p.code)].de}\t${p.code}`)).join("\n");
+  const done=()=>{ pickedCopy.textContent="Kopiert"; setTimeout(()=>pickedCopy.textContent="Liste kopieren",1500); };
+  const fallback=()=>{ const r=document.createRange(); r.selectNodeContents(pickedList); const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+    pickedCopy.textContent="Markiert – mit Strg+C kopieren"; setTimeout(()=>pickedCopy.textContent="Liste kopieren",3000); };
+  try { navigator.clipboard.writeText(txt).then(done,fallback); } catch(e){ fallback(); }
+});
+renderPicked();
+
 function choose(i){ const t=results[i].t; t.g ? showGroup(t.o) : showConcept(t.o); }
 
 input.addEventListener("input",()=>{ detail.innerHTML=""; render(); });
